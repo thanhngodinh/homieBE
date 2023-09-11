@@ -1,0 +1,866 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "This is a sample server celler server.",
+    "title": "Swagger Example API",
+    "termsOfService": "http://swagger.io/terms/",
+    "contact": {
+      "name": "API Support",
+      "url": "http://www.swagger.io/support",
+      "email": "support@swagger.io"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version": "1.0"
+  },
+  "host": "localhost:8080",
+  "basePath": "/",
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["Users"],
+        "summary": "Login",
+        "parameters": [
+          {
+            "description": "User to login",
+            "name": "User",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/domain.User"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/util.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/domain.User"
+                    },
+                    "value": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Invalid character 's' looking for beginning of value",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["Users"],
+        "summary": "Create a User",
+        "parameters": [
+          {
+            "description": "User to create",
+            "name": "User",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/domain.User"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/util.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/domain.User"
+                    },
+                    "value": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Invalid character 's' looking for beginning of value",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/hostels": {
+      "get": {
+        "description": "Return a list of the Hostels included the pagination",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["Hostels"],
+        "summary": "Get Hostels",
+        "parameters": [
+          {
+            "type": "string",
+            "example": "Bearer eyJhbGci...",
+            "description": "The Authorization",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "example": "0",
+            "description": "The index of the page start from 0",
+            "name": "pageIdx",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "example": "10",
+            "description": "The number of Hostels return on each page",
+            "name": "pageSize",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/domain.GetHostelsResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "post": {
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["Hostels"],
+        "summary": "Create a Hostel",
+        "parameters": [
+          {
+            "type": "string",
+            "example": "Bearer eyJhbGci...",
+            "description": "The Authorization",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          },
+          {
+            "description": "Hostel to create",
+            "name": "Hostel",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/domain.Hostel"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/util.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/domain.Hostel"
+                    },
+                    "value": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Invalid character 's' looking for beginning of value",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/hostels/{code}": {
+      "get": {
+        "description": "Return a Hostel with the code",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["Hostels"],
+        "summary": "Get a Hostel",
+        "parameters": [
+          {
+            "type": "string",
+            "example": "Bearer eyJhbGc...",
+            "description": "The Authorization",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "example": "07e7a76c-1bbb-11ed-861d-0242ac120002",
+            "description": "The code of the Hostel",
+            "name": "code",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/domain.Hostel"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "put": {
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["Hostels"],
+        "summary": "Update a Hostel",
+        "parameters": [
+          {
+            "type": "string",
+            "example": "Bearer eyJhbGci...",
+            "description": "The Authorization",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "example": "07e7a76c-1bbb-11ed-861d-0242ac120002",
+            "description": "The code of the Hostel",
+            "name": "code",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Hostel to update",
+            "name": "Hostel",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/domain.Hostel"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/util.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/domain.Hostel"
+                    },
+                    "value": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Invalid character 's' looking for beginning of value",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "delete": {
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["Hostels"],
+        "summary": "Delete a Hostel",
+        "parameters": [
+          {
+            "type": "string",
+            "example": "Bearer eyJhbGci...",
+            "description": "The Authorization",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The code of The Hostel",
+            "name": "code",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "1",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "404": {
+            "description": "0",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/team_members": {
+      "get": {
+        "description": "Return a list of the TeamMembers included the pagination",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["TeamMembers"],
+        "summary": "Get TeamMembers",
+        "parameters": [
+          {
+            "type": "string",
+            "example": "Bearer eyJhbGci...",
+            "description": "The Authorization",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The index of the page start from 0",
+            "name": "pageIdx",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The number of TeamMembers return on each page",
+            "name": "pageSize",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/domain.GetTeamMembersResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "post": {
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["TeamMembers"],
+        "summary": "Create a TeamMember",
+        "parameters": [
+          {
+            "type": "string",
+            "example": "Bearer eyJhbGci...",
+            "description": "The Authorization",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          },
+          {
+            "description": "TeamMember to create",
+            "name": "TeamMember",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/domain.TeamMember"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/util.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/domain.TeamMember"
+                    },
+                    "value": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Invalid character 's' looking for beginning of value",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/team_members/hostels/{code}": {
+      "get": {
+        "description": "Return a list of the TeamMember belong to a Hostel included the pagination",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["TeamMembers"],
+        "summary": "Get TeamMembers by Hostel's code",
+        "parameters": [
+          {
+            "type": "string",
+            "example": "Bearer eyJhbGci...",
+            "description": "The Authorization",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The code of the Hostel",
+            "name": "code",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The index of the page start from 0",
+            "name": "pageIdx",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The number of TeamMembers return on each page",
+            "name": "pageSize",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/domain.GetTeamMembersResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/team_members/{code}": {
+      "delete": {
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["TeamMembers"],
+        "summary": "Delete a TeamMember",
+        "parameters": [
+          {
+            "type": "string",
+            "example": "Bearer eyJhbGci...",
+            "description": "The Authorization",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The code of The TeamMember",
+            "name": "code",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "1",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "404": {
+            "description": "0",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/team_members/{id}": {
+      "get": {
+        "description": "Return a TeamMember with the id",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["TeamMembers"],
+        "summary": "Get a TeamMember",
+        "parameters": [
+          {
+            "type": "string",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            "description": "The Authorization",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The id of the TeamMember",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/domain.TeamMember"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "put": {
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["TeamMembers"],
+        "summary": "Update a TeamMember",
+        "parameters": [
+          {
+            "type": "string",
+            "example": "Bearer eyJhbG...",
+            "description": "The Authorization",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The id of the TeamMember",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "TeamMember to update",
+            "name": "TeamMember",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/domain.TeamMember"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/util.Response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/domain.TeamMember"
+                    },
+                    "value": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Invalid character 's' looking for beginning of value",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "domain.GetHostelsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/domain.Hostel"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/util.Pagination"
+        }
+      }
+    },
+    "domain.GetTeamMembersResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/domain.TeamMember"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/util.Pagination"
+        }
+      }
+    },
+    "domain.Hostel": {
+      "type": "object",
+      "properties": {
+        "district": {
+          "type": "string",
+          "example": "Bedford"
+        },
+        "email": {
+          "type": "string",
+          "example": "peter.p@zylker.com"
+        },
+        "name": {
+          "type": "string",
+          "example": "Robert Robertson"
+        },
+        "ownerId": {
+          "type": "string",
+          "example": "07e7a76c-1bbb-11ed-861d-0242ac120002"
+        },
+        "phone": {
+          "type": "string",
+          "example": "09832209761"
+        },
+        "province": {
+          "type": "string",
+          "example": "Titao"
+        },
+        "status": {
+          "type": "string",
+          "example": "Active"
+        },
+        "street": {
+          "type": "string",
+          "example": "144 J B Hazra Road"
+        }
+      }
+    },
+    "domain.TeamMember": {
+      "type": "object",
+      "properties": {
+        "birthDate": {
+          "type": "string",
+          "example": "1991-05-06"
+        },
+        "district": {
+          "type": "string",
+          "example": "Bedford"
+        },
+        "email": {
+          "type": "string",
+          "example": "peter.p@zylker.com"
+        },
+        "firstName": {
+          "type": "string",
+          "example": "Robert"
+        },
+        "id": {
+          "type": "string",
+          "example": "6a077d3c-1bbb-11ed-861d-0242ac120002"
+        },
+        "lastName": {
+          "type": "string",
+          "example": "Robertson"
+        },
+        "hostelCode": {
+          "type": "string",
+          "example": "07e7a76c-1bbb-11ed-861d-0242ac120002"
+        },
+        "nationality": {
+          "type": "string",
+          "example": "Afghanistan"
+        },
+        "password": {
+          "type": "string",
+          "example": "Password@3"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "province": {
+          "type": "string",
+          "example": "Titao"
+        },
+        "role": {
+          "type": "string",
+          "example": "Owner or Manager or Staff"
+        },
+        "street": {
+          "type": "string",
+          "example": "144 J B Hazra Road"
+        },
+        "username": {
+          "type": "string",
+          "example": "robertson"
+        }
+      }
+    },
+    "domain.User": {
+      "type": "object",
+      "properties": {
+        "password": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        }
+      }
+    },
+    "util.Pagination": {
+      "type": "object",
+      "properties": {
+        "pageIdx": {
+          "type": "integer"
+        },
+        "pageSize": {
+          "type": "integer"
+        },
+        "total": {
+          "type": "integer"
+        }
+      }
+    },
+    "util.Response": {
+      "type": "object",
+      "properties": {
+        "data": {},
+        "error": {},
+        "status": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}

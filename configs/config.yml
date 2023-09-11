@@ -1,0 +1,35 @@
+server:
+  name: hostel-service
+  port: 8080
+
+sql:
+  driver: postgres
+  user: postgres
+  password: postgres
+  host: localhost
+  port: 5433
+  database: postgres
+
+log:
+  level: info
+  map:
+    time: '@timestamp'
+    msg: message
+
+middleware:
+  log: true
+  skips: /health
+  request: request
+  response: response
+  size: size
+
+client:
+  endpoint:
+    url: 'http://localhost:8080/hostels'
+    timeout: 1s
+  log:
+    log: true
+    size: size
+    status: status
+    request: request
+    response: response
