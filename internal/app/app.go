@@ -2,15 +2,15 @@ package app
 
 import (
 	"context"
-	"reflect"
 
 	sv "github.com/core-go/core"
 	v "github.com/core-go/core/v10"
 	"github.com/core-go/health"
 	"github.com/core-go/log"
-	"github.com/core-go/search/query"
 	q "github.com/core-go/sql"
 	_ "github.com/lib/pq"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 
 	hostelHandler "hostel-service/internal/hostel/adapter/handler"
 	hostelRepository "hostel-service/internal/hostel/adapter/repository"
@@ -19,15 +19,14 @@ import (
 
 	authHandler "hostel-service/internal/authentication/adapter/handler"
 	authRepository "hostel-service/internal/authentication/adapter/repository"
-	authDomain "hostel-service/internal/authentication/domain"
 	authPort "hostel-service/internal/authentication/port"
 	authService "hostel-service/internal/authentication/service"
 )
 
 type ApplicationContext struct {
-	Health     *health.Handler
-	Hostel   hostelPort.HostelHandler
-	Auth       authPort.AuthenticationHandler
+	Health *health.Handler
+	Hostel hostelPort.HostelHandler
+	Auth   authPort.AuthenticationHandler
 }
 
 func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
@@ -35,6 +34,9 @@ func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	gormDb, err := gorm.Open(postgres.Open(conf.DB), &gorm.Config{})
+
 	logError := log.LogError
 	status := sv.InitializeStatus(conf.Status)
 	action := sv.InitializeAction(conf.Action)
@@ -47,22 +49,16 @@ func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
 		return nil, err
 	}
 
-	userType := reflect.TypeOf(authDomain.User{})
-	authQueryBuilder := query.NewBuilder(db, "users", userType)
-	authSearchBuilder, err := q.NewSearchBuilder(db, userType, authQueryBuilder.BuildQuery)
-	if err != nil {
-		return nil, err
-	}
-	authRepository := authRepository.NewAuthenticationAdapter(db)
-	authService := authService.NewAuthenticationService(db, authRepository)
-	authHandler := authHandler.NewAuthenticationHandler(authSearchBuilder.Search, authService, status, logError, validator.Validate, &action)
+	authRepository := authRepository.NewAuthenticationAdapter(gormDb)
+	authService := authService.NewAuthenticationService(gormDb, authRepository)
+	authHandler := authHandler.NewAuthenticationHandler(authService, status, logError, validator.Validate, &action)
 
 	sqlChecker := q.NewHealthChecker(db)
 	healthHandler := health.NewHandler(sqlChecker)
 
 	return &ApplicationContext{
-		Health:     healthHandler,
-		Hostel:   hostelHandler,
-		Auth:       authHandler,
+		Health: healthHandler,
+		Hostel: hostelHandler,
+		Auth:   authHandler,
 	}, nil
 }

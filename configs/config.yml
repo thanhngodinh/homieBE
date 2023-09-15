@@ -10,6 +10,8 @@ sql:
   port: 5433
   database: postgres
 
+db: 'host=localhost user=postgres password=postgres dbname=postgres port=5433'
+
 log:
   level: info
   map:

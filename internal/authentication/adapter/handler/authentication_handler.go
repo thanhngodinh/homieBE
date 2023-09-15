@@ -16,7 +16,7 @@ import (
 	"hostel-service/internal/authentication/service"
 )
 
-func NewAuthenticationHandler(find func(context.Context, interface{}, interface{}, int64, ...int64) (int64, string, error), service service.AuthenticationService, status core.StatusConfig, logError func(context.Context, string, ...map[string]interface{}), validate func(context.Context, interface{}) ([]core.ErrorMessage, error), action *core.ActionConfig) *HttpAuthenticationHandler {
+func NewAuthenticationHandler(service service.AuthenticationService, status core.StatusConfig, logError func(context.Context, string, ...map[string]interface{}), validate func(context.Context, interface{}) ([]core.ErrorMessage, error), action *core.ActionConfig) *HttpAuthenticationHandler {
 	modelType := reflect.TypeOf(domain.User{})
 	params := core.CreateParams(modelType, &status, logError, validate, action)
 	return &HttpAuthenticationHandler{service: service, Params: params}
@@ -27,16 +27,6 @@ type HttpAuthenticationHandler struct {
 	*core.Params
 }
 
-// Login godoc
-// @Summary      Login
-// @Tags         Users
-// @Accept       json
-// @Produce      json
-// @Param        User body      domain.User true "User to login"
-// @Success      201  {object}  util.Response{value=int,data=domain.User}
-// @Failure      400  {string}  string      "Invalid character 's' looking for beginning of value"
-// @Failure      500  {string}  string      "Internal Server Error"
-// @Router       /auth/login [post]
 func (h *HttpAuthenticationHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var credentials struct {
 		Username string `json:"username"`
@@ -67,16 +57,6 @@ func (h *HttpAuthenticationHandler) Login(w http.ResponseWriter, r *http.Request
 	}
 }
 
-// CreateUser godoc
-// @Summary      Create a User
-// @Tags         Users
-// @Accept       json
-// @Produce      json
-// @Param        User body     domain.User  true "User to create"
-// @Success      201  {object} util.Response{value=int,data=domain.User}
-// @Failure      400  {string} string       "Invalid character 's' looking for beginning of value"
-// @Failure      500  {string} string       "Internal Server Error"
-// @Router       /auth/register [post]
 func (h *HttpAuthenticationHandler) Register(w http.ResponseWriter, r *http.Request) {
 	var user domain.User
 	er1 := core.Decode(w, r, &user)
@@ -90,7 +70,7 @@ func (h *HttpAuthenticationHandler) Register(w http.ResponseWriter, r *http.Requ
 				return
 			}
 			user.Password = string(hashedPassword)
-			now := time.Now()
+			now := time.Now().Format(time.RFC3339)
 			user.CreatedAt = &now
 			res, er3 := h.service.Create(r.Context(), &user)
 			core.AfterCreated(w, r, &user, res, er3, h.Status, h.Error, h.Log, h.Resource, h.Action.Create)

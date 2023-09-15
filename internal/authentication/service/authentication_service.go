@@ -2,9 +2,10 @@ package service
 
 import (
 	"context"
-	"database/sql"
 	"hostel-service/internal/authentication/domain"
 	"hostel-service/internal/authentication/port"
+
+	"gorm.io/gorm"
 )
 
 type AuthenticationService interface {
@@ -12,12 +13,12 @@ type AuthenticationService interface {
 	Create(ctx context.Context, user *domain.User) (int64, error)
 }
 
-func NewAuthenticationService(db *sql.DB, repository port.AuthenticationRepository) AuthenticationService {
+func NewAuthenticationService(db *gorm.DB, repository port.AuthenticationRepository) AuthenticationService {
 	return &authenticationService{db: db, repository: repository}
 }
 
 type authenticationService struct {
-	db         *sql.DB
+	db         *gorm.DB
 	repository port.AuthenticationRepository
 }
 
@@ -26,16 +27,17 @@ func (s *authenticationService) GetByUsername(ctx context.Context, username stri
 }
 
 func (s *authenticationService) Create(ctx context.Context, user *domain.User) (int64, error) {
-	tx, err := s.db.Begin()
-	if err != nil {
-		return -1, err
-	}
-	ctx = context.WithValue(ctx, "tx", tx)
-	res, err := s.repository.Create(ctx, user)
-	if err != nil {
-		tx.Rollback()
-		return -1, err
-	}
-	err = tx.Commit()
-	return res, err
+	// tx, err := s.db.Begin()
+	// if err != nil {
+	// 	return -1, err
+	// }
+	// ctx = context.WithValue(ctx, "tx", tx)
+	// res, err := s.repository.Create(ctx, user)
+	// if err != nil {
+	// 	tx.Rollback()
+	// 	return -1, err
+	// }
+	// err = tx.Commit()
+	// return res, err
+	return s.repository.Create(ctx, user)
 }
