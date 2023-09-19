@@ -1,16 +1,16 @@
 CREATE TABLE "users" (
-  "id" varchar(100) PRIMARY KEY,
-  "username" varchar(255) NOT NULL,
-  "phone" varchar(15),
-  "password" varchar(255) NOT NULL,
-  "email" varchar(255) NOT NULL,
+  "id" varchar(20) PRIMARY KEY,
+  "username" varchar(100) NOT NULL,
+  "phone" varchar(10) default '',
+  "password" varchar(100) NOT NULL,
+  "email" varchar(100) NOT NULL,
   "is_email_verified" char(1) DEFAULT 0,
   "birth_date" timestamptz,
-  "gender" varchar(20),
-  "first_name" varchar(50),
-  "last_name" varchar(50),
-  "middle_name" varchar(50),
-  "address" varchar(100),
+  "gender" varchar(10) default '',
+  "first_name" varchar(50) default '',
+  "last_name" varchar(50) default '',
+  "middle_name" varchar(50) default '',
+  "address" varchar(100) default '',
   "created_at" timestamptz DEFAULT (current_timestamp),
   "created_by" varchar(100),
   "updated_at" timestamptz,
@@ -18,8 +18,8 @@ CREATE TABLE "users" (
 );
 
 CREATE TABLE "posts" (
-  "id" varchar(100) PRIMARY KEY,
-  "name" varchar(255) NOT NULL,
+  "id" varchar(20) PRIMARY KEY,
+  "name" varchar(100) NOT NULL,
   "province" varchar(20) NOT NULL,
   "district" varchar(20) NOT NULL,
   "ward" varchar(20) NOT NULL,
@@ -37,7 +37,14 @@ CREATE TABLE "posts" (
   "created_at" timestamptz DEFAULT (current_timestamp),
   "created_by" varchar(100) NOT NULL,
   "updated_at" timestamptz,
-  "updated_by" varchar(100)
+  "updated_by" varchar(100),
+  "deleted_at" timestamptz
+);
+
+CREATE TABLE "user_like_posts" (
+  id serial PRIMARY KEY,
+  user_id varchar(20),
+  post_id varchar(20)
 );
 
 insert into users (id, username, phone, password_hash, email, is_email_verified, birth_date, first_name , last_name, "address") values
@@ -55,4 +62,9 @@ insert into posts (id, name, province, district, ward, street, status, cost , el
 ('post4', 'Four Hostel', 'Can Tho', 'Ba Dinh', 'ward1', 'street1', 1, 1500000, 4000, 20000, 100000, 0, 1, 15, 'Nha dep'),
 ('post5', 'Five Hostel', 'Ha Noi', 'Ba Dinh', 'ward1', 'street1', 1, 1500000, 3500, 20000, 100000, 0, 5, 20, 'Nha dep');
 
-
+insert into user_like_posts (id, user_id, post_id) values
+(1, 'user00001', 'post1'),
+(2, 'user00001', 'post2'),
+(3, 'user00002', 'post1'),
+(4, 'user00003', 'post3'),
+(5, 'user00004', 'post4');

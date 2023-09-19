@@ -15,6 +15,8 @@ var ErrorCodeNotMatch ErrorDefined = errors.New("pageSize must be an integer")
 
 var ErrorIdEmpty ErrorDefined = errors.New("id is empty")
 var ErrorCodeEmpty ErrorDefined = errors.New("code is empty")
+var ErrorPostIdEmpty ErrorDefined = errors.New("post id is empty")
+var ErrorUserIdEmpty ErrorDefined = errors.New("user id is empty")
 
 func IsDefinedErrorType(err error) bool {
 	switch err.(type) {

@@ -28,28 +28,89 @@ type HttpHostelHandler struct {
 func (h *HttpHostelHandler) GetHostels(w http.ResponseWriter, r *http.Request) {
 	pageIdxParam := r.URL.Query().Get("pageIdx")
 	pageSizeParam := r.URL.Query().Get("pageSize")
-	pageIdx, err := strconv.Atoi(pageIdxParam)
-	if err != nil {
-		JSON(w, http.StatusBadRequest, util.Response{
-			Message: util.ErrorWrongTypePageIdx.Error(),
-		})
-		return
+	sort := r.URL.Query().Get("sort")
+	hostelName := r.URL.Query().Get("name")
+	province := r.URL.Query().Get("province")
+	district := r.URL.Query().Get("district")
+	ward := r.URL.Query().Get("ward")
+	costFromParam := r.URL.Query().Get("costFrom")
+	costToParam := r.URL.Query().Get("costTo")
+	capacityParam := r.URL.Query().Get("capacity")
+
+	hostel := &domain.HostelFilter{
+		Name:     &hostelName,
+		Province: &province,
+		District: &district,
+		Ward:     &ward,
+		Sort:     "created_at desc",
 	}
-	pageSize, err := strconv.Atoi(pageSizeParam)
-	if err != nil {
-		JSON(w, http.StatusBadRequest, util.Response{
-			Message: util.ErrorWrongTypePageSize.Error(),
-		})
-		return
+	if len(sort) > 0 {
+		hostel.Sort = sort
 	}
-	res, err := h.service.GetHostels(r.Context(), pageSize, pageIdx)
+	if len(pageIdxParam) > 0 {
+		pageIdx, err := strconv.Atoi(pageIdxParam)
+		if err != nil {
+			JSON(w, http.StatusBadRequest, util.Response{
+				Message: util.ErrorWrongTypePageIdx.Error(),
+			})
+			return
+		}
+		hostel.PageIdx = pageIdx
+	} else {
+		hostel.PageIdx = 0
+	}
+
+	if len(pageSizeParam) > 0 {
+		pageSize, err := strconv.Atoi(pageSizeParam)
+		if err != nil {
+			JSON(w, http.StatusBadRequest, util.Response{
+				Message: util.ErrorWrongTypePageSize.Error(),
+			})
+			return
+		}
+		hostel.PageSize = pageSize
+	} else {
+		hostel.PageSize = 10
+	}
+	if len(costFromParam) > 0 {
+		cost, err := strconv.Atoi(costFromParam)
+		if err != nil && len(costFromParam) > 0 {
+			JSON(w, http.StatusBadRequest, util.Response{
+				Message: "cost must be an integer",
+			})
+			return
+		}
+		hostel.CostFrom = &cost
+	}
+	if len(costToParam) > 0 {
+		cost, err := strconv.Atoi(costToParam)
+		if err != nil && len(costToParam) > 0 {
+			JSON(w, http.StatusBadRequest, util.Response{
+				Message: "cost must be an integer",
+			})
+			return
+		}
+		hostel.CostTo = &cost
+	}
+	if len(capacityParam) > 0 {
+		capacity, err := strconv.Atoi(capacityParam)
+		if err != nil {
+			JSON(w, http.StatusBadRequest, util.Response{
+				Message: "capacity must be an integer",
+			})
+			return
+		}
+		hostel.Capacity = &capacity
+	}
+
+	res, err := h.service.GetHostels(r.Context(), hostel)
 	if err != nil {
 		h.logError(r.Context(), err.Error())
 		http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
 	} else {
 		JSON(w, http.StatusOK, util.Response{
 			Data:  res.Data,
-			Total: res.Pagin.Total,
+			Total: res.Total,
 		})
 	}
 }

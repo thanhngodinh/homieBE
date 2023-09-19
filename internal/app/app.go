@@ -11,6 +11,7 @@ import (
 	_ "github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 
 	hostelHandler "hostel-service/internal/hostel/adapter/handler"
 	hostelRepository "hostel-service/internal/hostel/adapter/repository"
@@ -35,19 +36,19 @@ func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
 		return nil, err
 	}
 
-	gormDb, err := gorm.Open(postgres.Open(conf.DB), &gorm.Config{})
+	gormDb, err := gorm.Open(postgres.Open(conf.DB), &gorm.Config{Logger: logger.Default.LogMode(logger.Info)})
+	if err != nil {
+		return nil, err
+	}
 
 	logError := log.LogError
 	status := sv.InitializeStatus(conf.Status)
 	action := sv.InitializeAction(conf.Action)
 	validator := v.NewValidator()
 
-	hostelRepository := hostelRepository.NewHostelAdapter(db)
-	hostelService := hostelService.NewHostelService(db, hostelRepository)
+	hostelRepository := hostelRepository.NewHostelAdapter(gormDb)
+	hostelService := hostelService.NewHostelService(hostelRepository)
 	hostelHandler := hostelHandler.NewHostelHandler(hostelService, validator.Validate, logError)
-	if err != nil {
-		return nil, err
-	}
 
 	authRepository := authRepository.NewAuthenticationAdapter(gormDb)
 	authService := authService.NewAuthenticationService(gormDb, authRepository)

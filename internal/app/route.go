@@ -6,9 +6,9 @@ import (
 	. "github.com/core-go/core"
 	"github.com/gorilla/mux"
 
-	httpSwagger "github.com/swaggo/http-swagger"
+	internalMid "hostel-service/internal/middleware"
 
-	// internalMid "hostel-service/internal/middleware"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func Route(r *mux.Router, ctx context.Context, conf Config) error {
@@ -17,6 +17,10 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 		return err
 	}
 	r.HandleFunc("/health", app.Health.Check).Methods(GET)
+
+	hostelSuggestRouter := r.PathPrefix("post/suggest").Subrouter()
+	hostelSuggestRouter.HandleFunc("", app.Hostel.GetHostels).Methods(GET)
+	hostelSuggestRouter.Use(internalMid.Authenticate)
 
 	hostelRouter := r.PathPrefix("/hostels").Subrouter()
 	hostelRouter.HandleFunc("", app.Hostel.GetHostels).Methods(GET)
