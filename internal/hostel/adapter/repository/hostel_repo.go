@@ -2,11 +2,8 @@ package repository
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"fmt"
 	"hostel-service/internal/hostel/domain"
-	"time"
 
 	"gorm.io/gorm"
 )
@@ -25,8 +22,7 @@ func (r *HostelAdapter) GetHostels(ctx context.Context, hostel *domain.HostelFil
 		hotels []domain.Hostel
 	)
 
-	tx = r.DB.Table("posts")
-	// tx = r.DB.Count().Table("posts")
+	tx = r.DB.Table("hostels")
 	if hostel.Name != nil && len(*hostel.Name) > 0 {
 		tx = tx.Where("name ilike ?", fmt.Sprintf("%%%v%%", *hostel.Name))
 	}
@@ -68,45 +64,21 @@ func (r *HostelAdapter) GetHostels(ctx context.Context, hostel *domain.HostelFil
 
 func (r *HostelAdapter) GetHostelById(ctx context.Context, id string) (*domain.Hostel, error) {
 	var hostel domain.Hostel
-	r.DB.Table("posts").Where("id = ? AND post_type = ?", id, "H").First(&hostel)
+	r.DB.Table("hostels").Where("id = ?", id).First(&hostel)
 	return &hostel, nil
 }
 
 func (r *HostelAdapter) CreateHostel(ctx context.Context, hostel *domain.Hostel) (int64, error) {
-	res := r.DB.Table("posts").Create(hostel)
+	res := r.DB.Table("hostels").Create(hostel)
 	return res.RowsAffected, res.Error
 }
 
 func (r *HostelAdapter) UpdateHostel(ctx context.Context, hostel *domain.Hostel) (int64, error) {
-	res := r.DB.Table("posts").Model(&hostel).Updates(hostel)
+	res := r.DB.Table("hostels").Model(&hostel).Updates(hostel)
 	return res.RowsAffected, res.Error
 }
 
-func (r *HostelAdapter) DeleteHostel(ctx context.Context, id string) (int64, error) {
-	res := r.DB.Table("posts").Where("id = ?", id).Updates(map[string]interface{}{"deleted_at": time.Now()})
+func (r *HostelAdapter) DeleteHostel(ctx context.Context, hostel *domain.Hostel) (int64, error) {
+	res := r.DB.Table("hostels").Delete(hostel)
 	return res.RowsAffected, res.Error
-}
-
-func inValidField(obj interface{}, field string, value string, excludeValue string) (bool, error) {
-	var notValid bool
-	var stmt *sql.Stmt
-	var err error
-	query := fmt.Sprintf(`select if(count(*), 'true', 'false') as no_valid from posts where %s = ? and not id = ?`, field)
-	if db, ok := obj.(*sql.DB); ok {
-		stmt, err = db.Prepare(query)
-		if err != nil {
-			return false, err
-		}
-	} else if tx, ok := obj.(*sql.Tx); ok {
-		stmt, err = tx.Prepare(query)
-		if err != nil {
-			return false, err
-		}
-	} else {
-		return false, errors.New("unknow db handler type")
-	}
-	if err = stmt.QueryRow(value, excludeValue).Scan(&notValid); err != nil {
-		return false, err
-	}
-	return notValid, nil
 }

@@ -18,6 +18,8 @@ var ErrorCodeEmpty ErrorDefined = errors.New("code is empty")
 var ErrorPostIdEmpty ErrorDefined = errors.New("post id is empty")
 var ErrorUserIdEmpty ErrorDefined = errors.New("user id is empty")
 
+const ErrorDuplicateKey = `ERROR: duplicate key value violates unique constraint "user_like_posts_pkey" (SQLSTATE 23505)`
+
 func IsDefinedErrorType(err error) bool {
 	switch err.(type) {
 	case ErrorDefined:

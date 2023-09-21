@@ -19,18 +19,20 @@ func Authenticate(next http.Handler) http.Handler {
 			core.Respond(w, r, http.StatusUnauthorized, nil, nil, nil, nil)
 			return
 		}
+		keyFunc := func(t *jwt.Token) (interface{}, error) {
+			return domain.SECRET_KEY, nil
+		}
 		token, err := jwt.ParseWithClaims(
 			splitedTokenStr[1],
 			&jwt.StandardClaims{},
-			func(t *jwt.Token) (interface{}, error) {
-				return domain.SECRET_KEY, nil
-			},
+			keyFunc,
 		)
 		if err != nil {
 			core.Respond(w, r, http.StatusUnauthorized, nil, nil, nil, nil)
 			return
 		}
 		claims := token.Claims.(*jwt.StandardClaims)
+		// claims.ExpiresAt = time.Now().Add(time.Minute * 15).Unix()
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "user_id", claims.Audience)))
 	})
 }

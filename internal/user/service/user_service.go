@@ -3,9 +3,9 @@ package service
 import (
 	"context"
 	hostel_domain "hostel-service/internal/hostel/domain"
+	hostel_port "hostel-service/internal/hostel/port"
+	user_domain "hostel-service/internal/user/domain"
 	"hostel-service/internal/user/port"
-
-	"gorm.io/gorm"
 )
 
 type UserService interface {
@@ -13,17 +13,23 @@ type UserService interface {
 	UserLikePost(ctx context.Context, userId string, postId string) (int64, error)
 }
 
-func NewUserService(db *gorm.DB, repository port.UserRepository) UserService {
-	return &userService{db: db, repository: repository}
+func NewUserService(
+	userRepo port.UserRepository,
+	hostelRepo hostel_port.HostelRepository,
+) UserService {
+	return &userService{
+		userRepo:   userRepo,
+		hostelRepo: hostelRepo,
+	}
 }
 
 type userService struct {
-	db         *gorm.DB
-	repository port.UserRepository
+	userRepo   port.UserRepository
+	hostelRepo hostel_port.HostelRepository
 }
 
 func (s *userService) GetPostLikedByUser(ctx context.Context, userId string) (*hostel_domain.GetHostelsResponse, error) {
-	hostels, total, err := s.repository.GetPostLikedByUser(ctx, userId)
+	hostels, total, err := s.userRepo.GetPostLikedByUser(ctx, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -34,5 +40,9 @@ func (s *userService) GetPostLikedByUser(ctx context.Context, userId string) (*h
 }
 
 func (s *userService) UserLikePost(ctx context.Context, userId string, postId string) (int64, error) {
-	return s.repository.UserLikePost(ctx, userId, postId)
+	up := user_domain.UserLikePosts{
+		UserId: userId,
+		PostId: postId,
+	}
+	return s.userRepo.UserLikePost(ctx, up)
 }

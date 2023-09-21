@@ -60,31 +60,10 @@ func (s *hostelService) CreateHostel(ctx context.Context, hostel *domain.Hostel)
 func (s *hostelService) UpdateHostel(ctx context.Context, hostel *domain.Hostel) (int64, error) {
 	t := time.Now()
 	hostel.UpdatedAt = &t
-	// tx, err := s.db.Begin()
-	// if err != nil {
-	// 	return -1, err
-	// }
-	// ctx = context.WithValue(ctx, "tx", tx)
-	// res, err := s.repository.UpdateHostel(ctx, hostel)
-	// if err != nil {
-	// 	tx.Rollback()
-	// 	return -1, err
-	// }
-	// err = tx.Commit()
 	return s.repository.UpdateHostel(ctx, hostel)
 }
 
 func (s *hostelService) DeleteHostel(ctx context.Context, code string) (int64, error) {
-	// tx, err := s.db.Begin()
-	// if err != nil {
-	// 	return -1, err
-	// }
-	// ctx = context.WithValue(ctx, "tx", tx)
-	// res, err := s.repository.DeleteHostel(ctx, code)
-	// if err != nil {
-	// 	tx.Rollback()
-	// 	return -1, err
-	// }
-	// err = tx.Commit()
-	return s.repository.DeleteHostel(ctx, code)
+	hostel := &domain.Hostel{Id : code}
+	return s.repository.DeleteHostel(ctx, hostel)
 }

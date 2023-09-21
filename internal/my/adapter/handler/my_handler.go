@@ -9,23 +9,23 @@ import (
 	sv "github.com/core-go/core"
 	"github.com/gorilla/mux"
 
-	"hostel-service/internal/user/service"
+	"hostel-service/internal/my/service"
 	"hostel-service/internal/util"
 )
 
-func NewUserHandler(service service.UserService, validate func(context.Context, interface{}) ([]sv.ErrorMessage, error), logError func(context.Context, string, ...map[string]interface{})) *HttpUserHandler {
-	return &HttpUserHandler{service: service, validate: validate, logError: logError}
+func NewMyHandler(service service.MyService, validate func(context.Context, interface{}) ([]sv.ErrorMessage, error), logError func(context.Context, string, ...map[string]interface{})) *HttpMyHandler {
+	return &HttpMyHandler{service: service, validate: validate, logError: logError}
 }
 
-type HttpUserHandler struct {
-	service  service.UserService
+type HttpMyHandler struct {
+	service  service.MyService
 	validate func(context.Context, interface{}) ([]sv.ErrorMessage, error)
 	logError func(context.Context, string, ...map[string]interface{})
 }
 
-func (h *HttpUserHandler) GetPostLikedByUser(w http.ResponseWriter, r *http.Request) {
+func (h *HttpMyHandler) GetMyPostLiked(w http.ResponseWriter, r *http.Request) {
 	userId := r.Context().Value("user_id").(string)
-	res, err := h.service.GetPostLikedByUser(r.Context(), userId)
+	res, err := h.service.GetMyPostLiked(r.Context(), userId)
 	if err != nil {
 		h.logError(r.Context(), err.Error())
 		http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
@@ -37,7 +37,21 @@ func (h *HttpUserHandler) GetPostLikedByUser(w http.ResponseWriter, r *http.Requ
 	}
 }
 
-func (h *HttpUserHandler) UserLikePost(w http.ResponseWriter, r *http.Request) {
+func (h *HttpMyHandler) GetMyPosts(w http.ResponseWriter, r *http.Request) {
+	userId := r.Context().Value("user_id").(string)
+	res, err := h.service.GetMyPosts(r.Context(), userId)
+	if err != nil {
+		h.logError(r.Context(), err.Error())
+		http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
+	} else {
+		JSON(w, http.StatusOK, util.Response{
+			Data:  res.Data,
+			Total: res.Total,
+		})
+	}
+}
+
+func (h *HttpMyHandler) LikePost(w http.ResponseWriter, r *http.Request) {
 	userId := r.Context().Value("user_id").(string)
 	postId := mux.Vars(r)["postId"]
 	if len(userId) == 0 {
@@ -47,7 +61,7 @@ func (h *HttpUserHandler) UserLikePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := h.service.UserLikePost(r.Context(), userId, postId)
+	res, err := h.service.LikePost(r.Context(), userId, postId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {

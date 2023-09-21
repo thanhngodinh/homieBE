@@ -11,7 +11,7 @@ import (
 type Config struct {
 	Server     core.ServerConf     `mapstructure:"server"`
 	Sql        sql.Config          `mapstructure:"sql"`
-	DB         string                  `mapstructure:"db"`
+	DB         string              `mapstructure:"db"`
 	Client     client.ClientConfig `mapstructure:"client"`
 	Log        log.Config          `mapstructure:"log"`
 	MiddleWare mid.LogConfig       `mapstructure:"middleware"`

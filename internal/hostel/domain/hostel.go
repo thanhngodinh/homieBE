@@ -2,6 +2,8 @@ package domain
 
 import (
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type HostelStatus string
@@ -33,7 +35,7 @@ type Hostel struct {
 	CreatedBy        string       `json:"createdBy,omitempty" gorm:"colum:created_by" example:"07e7a76c-1bbb-11ed-861d-0242ac120002" swaggerignore:"true"`
 	UpdatedAt        *time.Time   `json:"updatedAt,omitempty" gorm:"colum:updated_at" example:"2006-01-02 03:04:07" swaggerignore:"true"`
 	UpdatedBy        *string      `json:"updatedBy,omitempty" gorm:"colum:updated_by" example:"07e7a76c-1bbb-11ed-861d-0242ac120002" swaggerignore:"true"`
-	DeletedAt        *time.Time   `json:"-" gorm:"colum:deleted_at" example:"2006-01-02 03:04:07" swaggerignore:"true"`
+	DeletedAt        gorm.DeletedAt
 }
 
 type GetHostelsResponse struct {

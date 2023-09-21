@@ -3,6 +3,6 @@ package port
 import "net/http"
 
 type UserHandler interface {
-	Register(w http.ResponseWriter, r *http.Request)
-	Login(w http.ResponseWriter, r *http.Request)
+	GetPostLikedByUser(w http.ResponseWriter, r *http.Request)
+	UserLikePost(w http.ResponseWriter, r *http.Request)
 }

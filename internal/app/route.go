@@ -16,7 +16,12 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 	if err != nil {
 		return err
 	}
-	r.HandleFunc("/health", app.Health.Check).Methods(GET)
+
+	userRouter := r.PathPrefix("/my").Subrouter()
+	userRouter.HandleFunc("/liked-posts", app.My.GetMyPostLiked).Methods(GET)
+	userRouter.HandleFunc("/posts", app.My.GetMyPosts).Methods(GET)
+	userRouter.HandleFunc("/like/{postId}", app.My.LikePost).Methods(POST)
+	userRouter.Use(internalMid.Authenticate)
 
 	hostelSuggestRouter := r.PathPrefix("post/suggest").Subrouter()
 	hostelSuggestRouter.HandleFunc("", app.Hostel.GetHostels).Methods(GET)
