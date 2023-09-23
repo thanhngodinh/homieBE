@@ -35,7 +35,7 @@ CREATE TABLE "hostels" (
   "capacity" int NOT NULL DEFAULT 0,
   "area" int DEFAULT 0,
   "decription" text default '',
-  "view" int 0,
+  "view" int DEFAULT 0,
   "created_at" timestamptz DEFAULT (current_timestamp),
   "created_by" varchar(100) NOT NULL,
   "updated_at" timestamptz,

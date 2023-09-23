@@ -10,7 +10,8 @@ sql:
   port: 5433
   database: postgres
 
-db: 'host=localhost user=postgres password=postgres dbname=postgres port=5433'
+# db: 'host=localhost user=postgres password=postgres dbname=postgres port=5433'
+db: 'host=satao.db.elephantsql.com user=otrodoaa password=xCYt_r2HWQ97cyuuXlJfKoMpijxd6L_M dbname=otrodoaa port=5432'
 
 log:
   level: info
