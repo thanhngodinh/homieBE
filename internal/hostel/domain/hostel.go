@@ -30,7 +30,8 @@ type Hostel struct {
 	WifiPrice        int          `json:"wifi_price,omitempty" gorm:"column:wifi_price" example:"100000"`
 	Capacity         int          `json:"capacity,omitempty" gorm:"column:capacity" example:"1"`
 	Area             int          `json:"area,omitempty" gorm:"column:area" example:"20"`
-	Description      *string      `json:"description,omitempty" gorm:"column:description" example:"Nha tro sieu dep"`
+	View             int          `json:"-" gorm:"column:view" example:"20"`
+	Description      string       `json:"description,omitempty" gorm:"column:description" example:"Nha tro sieu dep"`
 	CreatedAt        time.Time    `json:"createdAt,omitempty" gorm:"colum:created_at" example:"2006-01-02 03:04:07" swaggerignore:"true"`
 	CreatedBy        string       `json:"createdBy,omitempty" gorm:"colum:created_by" example:"07e7a76c-1bbb-11ed-861d-0242ac120002" swaggerignore:"true"`
 	UpdatedAt        *time.Time   `json:"updatedAt,omitempty" gorm:"colum:updated_at" example:"2006-01-02 03:04:07" swaggerignore:"true"`

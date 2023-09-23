@@ -3,12 +3,10 @@ package app
 import (
 	"context"
 
-	. "github.com/core-go/core"
 	"github.com/gorilla/mux"
 
 	internalMid "hostel-service/internal/middleware"
-
-	httpSwagger "github.com/swaggo/http-swagger"
+	// httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func Route(r *mux.Router, ctx context.Context, conf Config) error {
@@ -23,23 +21,32 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 	userRouter.HandleFunc("/like/{postId}", app.My.LikePost).Methods(POST)
 	userRouter.Use(internalMid.Authenticate)
 
-	hostelSuggestRouter := r.PathPrefix("post/suggest").Subrouter()
-	hostelSuggestRouter.HandleFunc("", app.Hostel.GetHostels).Methods(GET)
-	hostelSuggestRouter.Use(internalMid.Authenticate)
+	r.HandleFunc("/hostels", app.Hostel.GetHostels).Methods(GET)
 
 	hostelRouter := r.PathPrefix("/hostels").Subrouter()
-	hostelRouter.HandleFunc("", app.Hostel.GetHostels).Methods(GET)
-	hostelRouter.HandleFunc("/{code}", app.Hostel.GetHostelById).Methods(GET)
+	hostelRouter.HandleFunc("/suggest", app.Hostel.GetSuggestHostels).Methods(GET)
 	hostelRouter.HandleFunc("", app.Hostel.CreateHostel).Methods(POST)
 	hostelRouter.HandleFunc("/{code}", app.Hostel.UpdateHostel).Methods(PUT)
-	hostelRouter.HandleFunc("/{code}", app.Hostel.DeleteHostel).Methods(DELETE)
-	// hostelRouter.Use(internalMid.Authenticate)
+	// hostelRouter.HandleFunc("/{code}", app.Hostel.DeleteHostel).Methods(DELETE)
+	hostelRouter.Use(internalMid.Authenticate)
+
+	hostelPublicRouter := r.PathPrefix("/hostels").Subrouter()
+	hostelPublicRouter.HandleFunc("/search", app.Hostel.SearchHostels).Methods(GET)
+	hostelPublicRouter.HandleFunc("/{code}", app.Hostel.GetHostelById).Methods(GET)
+	hostelPublicRouter.Use(internalMid.PublicAuth)
 
 	authRouter := r.PathPrefix("/auth").Subrouter()
 	authRouter.HandleFunc("/register", app.Auth.Register).Methods(POST)
 	authRouter.HandleFunc("/login", app.Auth.Login).Methods(POST)
 
-	r.PathPrefix("/").Handler(httpSwagger.WrapHandler)
+	// r.PathPrefix("/").Handler(httpSwagger.WrapHandler)
 
 	return nil
 }
+
+const (
+	GET    = "GET"
+	POST   = "POST"
+	PUT    = "PUT"
+	DELETE = "DELETE"
+)

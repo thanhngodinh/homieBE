@@ -15,8 +15,14 @@ import (
 	"hostel-service/internal/util"
 )
 
-func NewHostelHandler(service service.HostelService, validate func(context.Context, interface{}) ([]sv.ErrorMessage, error), logError func(context.Context, string, ...map[string]interface{})) *HttpHostelHandler {
-	return &HttpHostelHandler{service: service, validate: validate, logError: logError}
+func NewHostelHandler(
+	service service.HostelService,
+	validate func(context.Context, interface{}) ([]sv.ErrorMessage, error),
+	logError func(context.Context, string, ...map[string]interface{})) *HttpHostelHandler {
+	return &HttpHostelHandler{
+		service:  service,
+		validate: validate,
+		logError: logError}
 }
 
 type HttpHostelHandler struct {
@@ -26,6 +32,54 @@ type HttpHostelHandler struct {
 }
 
 func (h *HttpHostelHandler) GetHostels(w http.ResponseWriter, r *http.Request) {
+	pageIdxParam := r.URL.Query().Get("pageIdx")
+	pageSizeParam := r.URL.Query().Get("pageSize")
+	sort := r.URL.Query().Get("sort")
+
+	hostel := &domain.HostelFilter{
+		Sort: "created_at desc",
+	}
+	if len(sort) > 0 {
+		hostel.Sort = sort
+	}
+	if len(pageIdxParam) > 0 {
+		pageIdx, err := strconv.Atoi(pageIdxParam)
+		if err != nil {
+			JSON(w, http.StatusBadRequest, util.Response{
+				Message: util.ErrorWrongTypePageIdx.Error(),
+			})
+			return
+		}
+		hostel.PageIdx = pageIdx
+	} else {
+		hostel.PageIdx = 0
+	}
+
+	if len(pageSizeParam) > 0 {
+		pageSize, err := strconv.Atoi(pageSizeParam)
+		if err != nil {
+			JSON(w, http.StatusBadRequest, util.Response{
+				Message: util.ErrorWrongTypePageSize.Error(),
+			})
+			return
+		}
+		hostel.PageSize = pageSize
+	} else {
+		hostel.PageSize = 10
+	}
+
+	hostels, total, err := h.service.GetHostels(r.Context(), hostel)
+	if err != nil {
+		h.logError(r.Context(), err.Error())
+		http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
+	} else {
+		JSON(w, http.StatusOK, util.Response{
+			Data:  hostels,
+			Total: total,
+		})
+	}
+}
+func (h *HttpHostelHandler) SearchHostels(w http.ResponseWriter, r *http.Request) {
 	pageIdxParam := r.URL.Query().Get("pageIdx")
 	pageSizeParam := r.URL.Query().Get("pageSize")
 	sort := r.URL.Query().Get("sort")
@@ -103,14 +157,28 @@ func (h *HttpHostelHandler) GetHostels(w http.ResponseWriter, r *http.Request) {
 		hostel.Capacity = &capacity
 	}
 
-	res, err := h.service.GetHostels(r.Context(), hostel)
+	hostels, total, err := h.service.GetHostels(r.Context(), hostel)
 	if err != nil {
 		h.logError(r.Context(), err.Error())
 		http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
 	} else {
 		JSON(w, http.StatusOK, util.Response{
-			Data:  res.Data,
-			Total: res.Total,
+			Data:  hostels,
+			Total: total,
+		})
+	}
+}
+
+func (h *HttpHostelHandler) GetSuggestHostels(w http.ResponseWriter, r *http.Request) {
+	userId := r.Context().Value("user_id").(string)
+	hostels, total, err := h.service.GetSuggestHostels(r.Context(), userId)
+	if err != nil {
+		h.logError(r.Context(), err.Error())
+		http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
+	} else {
+		JSON(w, http.StatusOK, util.Response{
+			Data:  hostels,
+			Total: total,
 		})
 	}
 }
@@ -123,16 +191,15 @@ func (h *HttpHostelHandler) GetHostelById(w http.ResponseWriter, r *http.Request
 		})
 		return
 	}
-	hostel, err := h.service.GetHostelById(r.Context(), code)
+	userId := r.Context().Value("user_id").(string)
+	hostel, err := h.service.GetHostelById(r.Context(), code, userId)
 	if err != nil {
 		h.logError(r.Context(), err.Error())
 		http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
 	} else if hostel == nil {
 		JSON(w, http.StatusNotFound, util.Response{})
 	} else {
-		JSON(w, http.StatusOK, util.Response{
-			Data: hostel,
-		})
+		JSON(w, http.StatusOK, hostel)
 	}
 }
 

@@ -50,15 +50,17 @@ func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
 	action := sv.InitializeAction(conf.Action)
 	validator := v.NewValidator()
 
+	// Repo
 	hostelRepository := hostelRepository.NewHostelAdapter(gormDb)
-	hostelService := hostelService.NewHostelService(hostelRepository)
+	userRepository := userRepository.NewUserAdapter(gormDb)
+	myRepository := myRepository.NewMyAdapter(gormDb)
+
+	hostelService := hostelService.NewHostelService(hostelRepository, userRepository)
 	hostelHandler := hostelHandler.NewHostelHandler(hostelService, validator.Validate, logError)
 
-	userRepository := userRepository.NewUserAdapter(gormDb)
 	userService := userService.NewUserService(userRepository, hostelRepository)
 	userHandler := userHandler.NewUserHandler(userService, validator.Validate, logError)
 
-	myRepository := myRepository.NewMyAdapter(gormDb)
 	myService := myService.NewMyService(myRepository, hostelRepository)
 	myHandler := myHandler.NewMyHandler(myService, validator.Validate, logError)
 

@@ -50,6 +50,15 @@ func (r *HostelAdapter) GetHostels(ctx context.Context, hostel *domain.HostelFil
 	if hostel.CostTo != nil {
 		tx = tx.Where("cost <= ?", hostel.CostTo)
 	}
+	if hostel.Capacity != nil {
+		tx = tx.Where("capacity = ?", hostel.Capacity)
+	}
+	if hostel.CapacityFrom != nil {
+		tx = tx.Where("capacity >= ?", hostel.CapacityFrom)
+	}
+	if hostel.CapacityTo != nil {
+		tx = tx.Where("capacity <= ?", hostel.CapacityTo)
+	}
 	if hostel.CreatedAt != nil {
 		tx = tx.Where("created_at = ?", hostel.CreatedAt)
 	}
@@ -65,6 +74,7 @@ func (r *HostelAdapter) GetHostels(ctx context.Context, hostel *domain.HostelFil
 func (r *HostelAdapter) GetHostelById(ctx context.Context, id string) (*domain.Hostel, error) {
 	var hostel domain.Hostel
 	r.DB.Table("hostels").Where("id = ?", id).First(&hostel)
+	r.DB.Table("hostels").Where("id = ?", id).Updates(map[string]interface{}{"view": hostel.View + 1})
 	return &hostel, nil
 }
 

@@ -19,13 +19,12 @@ func Authenticate(next http.Handler) http.Handler {
 			core.Respond(w, r, http.StatusUnauthorized, nil, nil, nil, nil)
 			return
 		}
-		keyFunc := func(t *jwt.Token) (interface{}, error) {
-			return domain.SECRET_KEY, nil
-		}
 		token, err := jwt.ParseWithClaims(
 			splitedTokenStr[1],
 			&jwt.StandardClaims{},
-			keyFunc,
+			func(t *jwt.Token) (interface{}, error) {
+				return domain.SECRET_KEY, nil
+			},
 		)
 		if err != nil {
 			core.Respond(w, r, http.StatusUnauthorized, nil, nil, nil, nil)
