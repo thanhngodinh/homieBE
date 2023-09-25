@@ -41,6 +41,7 @@ func (h *HttpAuthenticationHandler) Login(w http.ResponseWriter, r *http.Request
 		}
 		if user == nil || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(credentials.Password)) != nil {
 			core.Respond(w, r, http.StatusNotFound, nil, nil, nil, nil)
+			return
 		}
 		claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
 			Audience:  user.Id,
@@ -49,6 +50,7 @@ func (h *HttpAuthenticationHandler) Login(w http.ResponseWriter, r *http.Request
 		token, er3 := claims.SignedString(domain.SECRET_KEY)
 		if er3 != nil {
 			core.HasError(w, r, nil, er3, h.Status.Error, h.Error, h.Log, h.Resource, *h.Action.Load)
+			return
 		}
 		accessToken := domain.AccessToken{
 			TokenString: token,

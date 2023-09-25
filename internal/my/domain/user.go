@@ -18,7 +18,3 @@ type User struct {
 	UpdatedAt       *string `json:"updatedAt,omitempty" gorm:"colum:updated_at"`
 	UpdatedBy       *string `json:"updatedBy,omitempty" gorm:"colum:updated_by"`
 }
-
-type AccessToken struct {
-	TokenString string `json:"access_token"`
-}
