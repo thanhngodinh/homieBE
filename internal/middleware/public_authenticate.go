@@ -7,7 +7,7 @@ import (
 
 	"github.com/golang-jwt/jwt"
 
-	"hostel-service/internal/authentication/domain"
+	"hostel-service/internal/user/domain"
 )
 
 func PublicAuth(next http.Handler) http.Handler {

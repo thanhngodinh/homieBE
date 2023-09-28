@@ -1,14 +1,11 @@
 server:
   name: hostel-service
   port: 8080
-
-sql:
-  driver: postgres
-  user: postgres
-  password: postgres
-  host: localhost
-  port: 5433
-  database: postgres
+allow:
+  origin: "http://localhost:3000"
+  method: GET,PUT,POST,DELETE,OPTIONS,PATCH,PATCH
+  credentials: true
+  headers: Access-Control-Allow-Headers,Authorization,Origin,Content-Type,Content-Length,Access-Control-Request-Method,Access-Control-Request-Headers
 
 # db: 'host=localhost user=postgres password=postgres dbname=postgres port=5433'
 db: 'host=satao.db.elephantsql.com user=otrodoaa password=xCYt_r2HWQ97cyuuXlJfKoMpijxd6L_M dbname=otrodoaa port=5432'

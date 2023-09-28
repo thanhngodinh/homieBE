@@ -12,6 +12,7 @@ CREATE TABLE "users" (
   "cost_suggest" int default 2000000,
   "capacity_suggest" int default 1,
   "gender" varchar(10) default '',
+  "date_of_birth" timestamptz,
   "created_at" timestamptz DEFAULT (current_timestamp),
   "created_by" varchar(100),
   "updated_at" timestamptz,

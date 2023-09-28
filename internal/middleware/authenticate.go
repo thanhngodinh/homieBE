@@ -8,7 +8,7 @@ import (
 	"github.com/core-go/core"
 	"github.com/golang-jwt/jwt"
 
-	"hostel-service/internal/authentication/domain"
+	"hostel-service/internal/user/domain"
 )
 
 func Authenticate(next http.Handler) http.Handler {

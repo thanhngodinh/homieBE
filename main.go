@@ -10,6 +10,7 @@ import (
 	"github.com/core-go/log"
 	mid "github.com/core-go/log/middleware"
 	"github.com/gorilla/mux"
+	"github.com/core-go/core/cors"
 
 	"hostel-service/internal/app"
 )
@@ -34,9 +35,10 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	
+	c := cors.New(conf.Allow)
+	handler := c.Handler(r)
 	fmt.Println(core.ServerInfo(conf.Server))
-	server := core.CreateServer(conf.Server, r)
+	server := core.CreateServer(conf.Server, handler)
 	if err = server.ListenAndServe(); err != nil {
 		fmt.Println(err.Error())
 	}

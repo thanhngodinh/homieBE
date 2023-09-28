@@ -9,6 +9,9 @@ import (
 
 type UserService interface {
 	UpdateUserSuggest(ctx context.Context, userUpdate *domain.UpdateUserSuggest) error
+	GetUserSuggest(ctx context.Context, userId string) (*domain.UserSuggest, error)
+	GetByUsername(ctx context.Context, username string) (*domain.User, error)
+	Create(ctx context.Context, user *domain.User) (int64, error)
 }
 
 func NewUserService(
@@ -32,4 +35,12 @@ func (s *userService) UpdateUserSuggest(ctx context.Context, userUpdate *domain.
 
 func (s *userService) GetUserSuggest(ctx context.Context, userId string) (*domain.UserSuggest, error) {
 	return s.userRepo.GetUserSuggest(ctx, userId)
+}
+
+func (s *userService) GetByUsername(ctx context.Context, username string) (*domain.User, error) {
+	return s.userRepo.GetByUsername(ctx, username)
+}
+
+func (s *userService) Create(ctx context.Context, user *domain.User) (int64, error) {
+	return s.userRepo.Create(ctx, user)
 }

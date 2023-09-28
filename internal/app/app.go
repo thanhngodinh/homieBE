@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 
-	sv "github.com/core-go/core"
 	v "github.com/core-go/core/v10"
 	"github.com/core-go/log"
 	_ "github.com/lib/pq"
@@ -25,18 +24,12 @@ import (
 	myRepository "hostel-service/internal/my/adapter/repository"
 	myPort "hostel-service/internal/my/port"
 	myService "hostel-service/internal/my/service"
-
-	authHandler "hostel-service/internal/authentication/adapter/handler"
-	authRepository "hostel-service/internal/authentication/adapter/repository"
-	authPort "hostel-service/internal/authentication/port"
-	authService "hostel-service/internal/authentication/service"
 )
 
 type ApplicationContext struct {
 	Hostel hostelPort.HostelHandler
 	User   userPort.UserHandler
 	My     myPort.MyHandler
-	Auth   authPort.AuthenticationHandler
 }
 
 func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
@@ -46,9 +39,10 @@ func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
 	}
 
 	logError := log.LogError
-	status := sv.InitializeStatus(conf.Status)
-	action := sv.InitializeAction(conf.Action)
-	validator := v.NewValidator()
+	validator, err := v.NewValidator()
+	if err != nil {
+		return nil, err
+	}
 
 	// Repo
 	hostelRepository := hostelRepository.NewHostelAdapter(gormDb)
@@ -64,13 +58,8 @@ func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
 	myService := myService.NewMyService(myRepository, hostelRepository)
 	myHandler := myHandler.NewMyHandler(myService, validator.Validate, logError)
 
-	authRepository := authRepository.NewAuthenticationAdapter(gormDb)
-	authService := authService.NewAuthenticationService(gormDb, authRepository)
-	authHandler := authHandler.NewAuthenticationHandler(authService, status, logError, validator.Validate, &action)
-
 	return &ApplicationContext{
 		Hostel: hostelHandler,
-		Auth:   authHandler,
 		User:   userHandler,
 		My:     myHandler,
 	}, nil

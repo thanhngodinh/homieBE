@@ -36,8 +36,8 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 	hostelPublicRouter.Use(internalMid.PublicAuth)
 
 	authRouter := r.PathPrefix("/auth").Subrouter()
-	authRouter.HandleFunc("/register", app.Auth.Register).Methods(POST)
-	authRouter.HandleFunc("/login", app.Auth.Login).Methods(POST)
+	authRouter.HandleFunc("/register", app.User.Register).Methods(POST)
+	authRouter.HandleFunc("/login", app.User.Login).Methods(POST)
 
 	// r.PathPrefix("/").Handler(httpSwagger.WrapHandler)
 
