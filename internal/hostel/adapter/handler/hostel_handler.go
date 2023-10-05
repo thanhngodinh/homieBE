@@ -224,6 +224,7 @@ func (h *HttpHostelHandler) CreateHostel(w http.ResponseWriter, r *http.Request)
 		JSON(w, http.StatusUnprocessableEntity, errors)
 		return
 	}
+	hostel.CreatedBy = r.Context().Value("userId").(string)
 	_, er3 := h.service.CreateHostel(r.Context(), &hostel)
 	if er3 != nil {
 		h.logError(r.Context(), er3.Error())

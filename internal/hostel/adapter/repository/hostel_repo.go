@@ -38,9 +38,6 @@ func (r *HostelAdapter) GetHostels(ctx context.Context, hostel *domain.HostelFil
 	if hostel.Street != nil && len(*hostel.Street) > 0 {
 		tx = tx.Where("street ilike ?", fmt.Sprintf("%%%v%%", *hostel.Street))
 	}
-	if hostel.PostType != nil && len(*hostel.PostType) > 0 {
-		tx = tx.Where("post_type = ?", hostel.PostType)
-	}
 	if hostel.Status != nil && len(*hostel.Status) > 0 {
 		tx = tx.Where("status = ?", hostel.Status)
 	}
@@ -49,6 +46,12 @@ func (r *HostelAdapter) GetHostels(ctx context.Context, hostel *domain.HostelFil
 	}
 	if hostel.CostTo != nil {
 		tx = tx.Where("cost <= ?", hostel.CostTo)
+	}
+	if hostel.DepositFrom != nil {
+		tx = tx.Where("deposit >= ?", hostel.DepositFrom)
+	}
+	if hostel.DepositTo != nil {
+		tx = tx.Where("deposit <= ?", hostel.DepositTo)
 	}
 	if hostel.Capacity != nil {
 		tx = tx.Where("capacity = ?", hostel.Capacity)

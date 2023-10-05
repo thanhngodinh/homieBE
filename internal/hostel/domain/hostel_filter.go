@@ -10,10 +10,11 @@ type HostelFilter struct {
 	District     *string    `json:"district,omitempty"`
 	Ward         *string    `json:"ward,omitempty"`
 	Street       *string    `json:"street,omitempty"`
-	PostType     *string    `json:"type,omitempty"`
 	Status       *string    `json:"status,omitempty"`
 	CostFrom     *int       `json:"costFrom,omitempty"`
 	CostTo       *int       `json:"costTo,omitempty"`
+	DepositFrom  *int       `json:"depositFrom,omitempty"`
+	DepositTo    *int       `json:"depositTo,omitempty"`
 	Capacity     *int       `json:"capacity,omitempty"`
 	CapacityFrom *int       `json:"-"`
 	CapacityTo   *int       `json:"-"`
