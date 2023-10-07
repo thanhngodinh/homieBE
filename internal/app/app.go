@@ -24,12 +24,18 @@ import (
 	myRepository "hostel-service/internal/my/adapter/repository"
 	myPort "hostel-service/internal/my/port"
 	myService "hostel-service/internal/my/service"
+
+	utilitiesHandler "hostel-service/internal/utilities/adapter/handler"
+	utilitiesRepository "hostel-service/internal/utilities/adapter/repository"
+	utilitiesPort "hostel-service/internal/utilities/port"
+	utilitiesService "hostel-service/internal/utilities/service"
 )
 
 type ApplicationContext struct {
-	Hostel hostelPort.HostelHandler
-	User   userPort.UserHandler
-	My     myPort.MyHandler
+	Hostel    hostelPort.HostelHandler
+	Utilities utilitiesPort.UtilitiesHandler
+	User      userPort.UserHandler
+	My        myPort.MyHandler
 }
 
 func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
@@ -48,9 +54,13 @@ func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
 	hostelRepository := hostelRepository.NewHostelAdapter(gormDb)
 	userRepository := userRepository.NewUserAdapter(gormDb)
 	myRepository := myRepository.NewMyAdapter(gormDb)
+	utilitiesRepository := utilitiesRepository.NewUtilitiesAdapter(gormDb)
 
 	hostelService := hostelService.NewHostelService(hostelRepository, userRepository)
 	hostelHandler := hostelHandler.NewHostelHandler(hostelService, validator.Validate, logError)
+
+	utilitiesService := utilitiesService.NewUtilitiesService(utilitiesRepository)
+	utilitiesHandler := utilitiesHandler.NewUtilitiesHandler(utilitiesService, validator.Validate, logError)
 
 	userService := userService.NewUserService(userRepository, hostelRepository)
 	userHandler := userHandler.NewUserHandler(userService, validator.Validate, logError)
@@ -59,8 +69,9 @@ func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
 	myHandler := myHandler.NewMyHandler(myService, validator.Validate, logError)
 
 	return &ApplicationContext{
-		Hostel: hostelHandler,
-		User:   userHandler,
-		My:     myHandler,
+		Hostel:    hostelHandler,
+		Utilities: utilitiesHandler,
+		User:      userHandler,
+		My:        myHandler,
 	}, nil
 }

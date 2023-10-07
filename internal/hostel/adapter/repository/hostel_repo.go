@@ -76,7 +76,22 @@ func (r *HostelAdapter) GetHostels(ctx context.Context, hostel *domain.HostelFil
 
 func (r *HostelAdapter) GetHostelById(ctx context.Context, id string) (*domain.Hostel, error) {
 	var hostel domain.Hostel
+
 	r.DB.Table("hostels").Where("id = ?", id).First(&hostel)
+	rows, err := r.DB.Table("hostels_utilities").Select("utilities_id").Where("hostel_id = ?", id).Rows()
+	if err != nil {
+		return &hostel, err
+	}
+	for rows.Next() {
+		var utility string
+		if err := rows.Scan(&utility); err != nil {
+			return &hostel, err
+		}
+		hostel.Utilities = append(hostel.Utilities, utility)
+	}
+	if err = rows.Err(); err != nil {
+		return &hostel, err
+	}
 	r.DB.Table("hostels").Where("id = ?", id).Updates(map[string]interface{}{"view": hostel.View + 1})
 	return &hostel, nil
 }

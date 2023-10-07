@@ -25,16 +25,23 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 	r.HandleFunc("/hostels", app.Hostel.GetHostels).Methods(GET)
 
 	hostelRouter := r.PathPrefix("/hostels").Subrouter()
-	hostelRouter.HandleFunc("/suggest", app.Hostel.GetSuggestHostels).Methods(GET)
 	hostelRouter.HandleFunc("", app.Hostel.CreateHostel).Methods(POST)
 	hostelRouter.HandleFunc("/{code}", app.Hostel.UpdateHostel).Methods(PUT)
-	// hostelRouter.HandleFunc("/{code}", app.Hostel.DeleteHostel).Methods(DELETE)
+	hostelRouter.HandleFunc("/{code}", app.Hostel.DeleteHostel).Methods(DELETE)
 	hostelRouter.Use(internalMid.Authenticate)
 
 	hostelPublicRouter := r.PathPrefix("/hostels").Subrouter()
 	hostelPublicRouter.HandleFunc("/search", app.Hostel.SearchHostels).Methods(GET)
+	hostelPublicRouter.HandleFunc("/suggest", app.Hostel.GetSuggestHostels).Methods(GET)
 	hostelPublicRouter.HandleFunc("/{code}", app.Hostel.GetHostelById).Methods(GET)
 	hostelPublicRouter.Use(internalMid.PublicAuth)
+
+	r.HandleFunc("/utilities", app.Utilities.GetAllUtilities).Methods(GET)
+	utilitiesRouter := r.PathPrefix("/utilities").Subrouter()
+	utilitiesRouter.HandleFunc("", app.Utilities.CreateUtilities).Methods(POST)
+	utilitiesRouter.HandleFunc("/{id}", app.Utilities.UpdateUtilities).Methods(PUT)
+	utilitiesRouter.HandleFunc("/{id}", app.Utilities.DeleteUtilities).Methods(DELETE)
+	utilitiesRouter.Use(internalMid.Authenticate)
 
 	authRouter := r.PathPrefix("/auth").Subrouter()
 	authRouter.HandleFunc("/register", app.User.Register).Methods(POST)

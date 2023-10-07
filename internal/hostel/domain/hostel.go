@@ -33,16 +33,22 @@ type Hostel struct {
 	Area             int            `json:"area,omitempty" gorm:"column:area" example:"20"`
 	Phone            string         `json:"phone,omitempty" gorm:"column:phone" example:"0987654321"`
 	ImageUrl         pq.StringArray `json:"imageUrl,omitempty" gorm:"column:image_url;type:text[]"`
+	Utilities        []string       `json:"utilities,omitempty" gorm:"-"`
 	View             int            `json:"-" gorm:"column:view" example:"20"`
 	Description      string         `json:"description,omitempty" gorm:"column:description" example:"Nha tro sieu dep"`
 	CreatedAt        time.Time      `json:"createdAt,omitempty" gorm:"colum:created_at" example:"2006-01-02 03:04:07" swaggerignore:"true"`
 	CreatedBy        string         `json:"createdBy,omitempty" gorm:"colum:created_by" example:"07e7a76c-1bbb-11ed-861d-0242ac120002" swaggerignore:"true"`
 	UpdatedAt        *time.Time     `json:"updatedAt,omitempty" gorm:"colum:updated_at" example:"2006-01-02 03:04:07" swaggerignore:"true"`
 	UpdatedBy        *string        `json:"updatedBy,omitempty" gorm:"colum:updated_by" example:"07e7a76c-1bbb-11ed-861d-0242ac120002" swaggerignore:"true"`
-	DeletedAt        gorm.DeletedAt
+	DeletedAt        gorm.DeletedAt `json:"-"`
 }
 
 type GetHostelsResponse struct {
 	Data  []Hostel `json:"data"`
 	Total int64    `json:"total"`
+}
+
+type HostelUtilities struct {
+	HostelId    string `gorm:"column:hostel_id"`
+	UtilitiesId string `gorm:"column:utilities_id"`
 }

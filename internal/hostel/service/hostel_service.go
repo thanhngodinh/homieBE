@@ -45,6 +45,14 @@ func (s *hostelService) SearchHostels(ctx context.Context, hostel *domain.Hostel
 }
 
 func (s *hostelService) GetSuggestHostels(ctx context.Context, userId string) ([]domain.Hostel, int64, error) {
+	if userId == "" {
+		hostel := &domain.HostelFilter{
+			PageSize: 10,
+			PageIdx:  0,
+			Sort:     "view desc",
+		}
+		return s.repository.GetHostels(ctx, hostel)
+	}
 	userSuggest, err := s.userRepo.GetUserSuggest(ctx, userId)
 	if err != nil {
 		return nil, 0, err
@@ -62,7 +70,7 @@ func (s *hostelService) GetSuggestHostels(ctx context.Context, userId string) ([
 		CapacityTo:   &capacityTo,
 		PageSize:     10,
 		PageIdx:      0,
-		Sort:         "view asc",
+		Sort:         "view desc",
 	}
 	hostels, total, err := s.repository.GetHostels(ctx, hostel)
 	if total < 10 {

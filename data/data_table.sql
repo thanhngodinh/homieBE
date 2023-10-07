@@ -60,7 +60,8 @@ CREATE TABLE utilities (
   "created_at" timestamptz DEFAULT (current_timestamp),
   "created_by" varchar(100) default '',
   "updated_at" timestamptz,
-  "updated_by" varchar(100) default ''
+  "updated_by" varchar(100) default '',
+  "deleted_at" timestamptz
 );
 
 CREATE TABLE "user_like_posts" (
