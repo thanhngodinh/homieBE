@@ -15,7 +15,7 @@ func PublicAuth(next http.Handler) http.Handler {
 		tokenStr := r.Header.Get("Authorization")
 		splitedTokenStr := strings.Split(tokenStr, " ")
 		if len(splitedTokenStr) != 2 || splitedTokenStr[0] != "Bearer" {
-			next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "user_id", "")))
+			next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "userId", "")))
 			return
 		}
 		token, err := jwt.ParseWithClaims(
@@ -26,11 +26,11 @@ func PublicAuth(next http.Handler) http.Handler {
 			},
 		)
 		if err != nil {
-			next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "user_id", "")))
+			next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "userId", "")))
 			return
 		}
 		claims := token.Claims.(*jwt.StandardClaims)
 		// claims.ExpiresAt = time.Now().Add(time.Minute * 15).Unix()
-		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "user_id", claims.Audience)))
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "userId", claims.Audience)))
 	})
 }

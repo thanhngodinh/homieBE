@@ -32,6 +32,6 @@ func Authenticate(next http.Handler) http.Handler {
 		}
 		claims := token.Claims.(*jwt.StandardClaims)
 		// claims.ExpiresAt = time.Now().Add(time.Minute * 15).Unix()
-		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "user_id", claims.Audience)))
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "userId", claims.Audience)))
 	})
 }

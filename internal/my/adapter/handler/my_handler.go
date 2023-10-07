@@ -24,7 +24,7 @@ type HttpMyHandler struct {
 }
 
 func (h *HttpMyHandler) GetMyPostLiked(w http.ResponseWriter, r *http.Request) {
-	userId := r.Context().Value("user_id").(string)
+	userId := r.Context().Value("userId").(string)
 	res, err := h.service.GetMyPostLiked(r.Context(), userId)
 	if err != nil {
 		h.logError(r.Context(), err.Error())
@@ -38,7 +38,7 @@ func (h *HttpMyHandler) GetMyPostLiked(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *HttpMyHandler) GetMyPosts(w http.ResponseWriter, r *http.Request) {
-	userId := r.Context().Value("user_id").(string)
+	userId := r.Context().Value("userId").(string)
 	res, err := h.service.GetMyPosts(r.Context(), userId)
 	if err != nil {
 		h.logError(r.Context(), err.Error())
@@ -52,7 +52,7 @@ func (h *HttpMyHandler) GetMyPosts(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *HttpMyHandler) LikePost(w http.ResponseWriter, r *http.Request) {
-	userId := r.Context().Value("user_id").(string)
+	userId := r.Context().Value("userId").(string)
 	postId := mux.Vars(r)["postId"]
 	if len(userId) == 0 {
 		JSON(w, http.StatusBadRequest, util.Response{
