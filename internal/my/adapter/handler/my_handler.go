@@ -54,9 +54,9 @@ func (h *HttpMyHandler) GetMyPosts(w http.ResponseWriter, r *http.Request) {
 func (h *HttpMyHandler) LikePost(w http.ResponseWriter, r *http.Request) {
 	userId := r.Context().Value("userId").(string)
 	postId := mux.Vars(r)["postId"]
-	if len(userId) == 0 {
+	if len(postId) == 0 {
 		JSON(w, http.StatusBadRequest, util.Response{
-			Message: util.ErrorPostIdEmpty.Error(),
+			Status: util.ErrorPostIdEmpty.Error(),
 		})
 		return
 	}

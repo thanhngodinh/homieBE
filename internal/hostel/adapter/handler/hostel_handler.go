@@ -46,7 +46,7 @@ func (h *HttpHostelHandler) GetHostels(w http.ResponseWriter, r *http.Request) {
 		pageIdx, err := strconv.Atoi(pageIdxParam)
 		if err != nil {
 			JSON(w, http.StatusBadRequest, util.Response{
-				Message: util.ErrorWrongTypePageIdx.Error(),
+				Status: util.ErrorWrongTypePageIdx.Error(),
 			})
 			return
 		}
@@ -59,7 +59,7 @@ func (h *HttpHostelHandler) GetHostels(w http.ResponseWriter, r *http.Request) {
 		pageSize, err := strconv.Atoi(pageSizeParam)
 		if err != nil {
 			JSON(w, http.StatusBadRequest, util.Response{
-				Message: util.ErrorWrongTypePageSize.Error(),
+				Status: util.ErrorWrongTypePageSize.Error(),
 			})
 			return
 		}
@@ -105,7 +105,7 @@ func (h *HttpHostelHandler) SearchHostels(w http.ResponseWriter, r *http.Request
 		pageIdx, err := strconv.Atoi(pageIdxParam)
 		if err != nil {
 			JSON(w, http.StatusBadRequest, util.Response{
-				Message: util.ErrorWrongTypePageIdx.Error(),
+				Status: util.ErrorWrongTypePageIdx.Error(),
 			})
 			return
 		}
@@ -118,7 +118,7 @@ func (h *HttpHostelHandler) SearchHostels(w http.ResponseWriter, r *http.Request
 		pageSize, err := strconv.Atoi(pageSizeParam)
 		if err != nil {
 			JSON(w, http.StatusBadRequest, util.Response{
-				Message: util.ErrorWrongTypePageSize.Error(),
+				Status: util.ErrorWrongTypePageSize.Error(),
 			})
 			return
 		}
@@ -130,7 +130,7 @@ func (h *HttpHostelHandler) SearchHostels(w http.ResponseWriter, r *http.Request
 		cost, err := strconv.Atoi(costFromParam)
 		if err != nil && len(costFromParam) > 0 {
 			JSON(w, http.StatusBadRequest, util.Response{
-				Message: "cost must be an integer",
+				Status: "cost must be an integer",
 			})
 			return
 		}
@@ -140,7 +140,7 @@ func (h *HttpHostelHandler) SearchHostels(w http.ResponseWriter, r *http.Request
 		cost, err := strconv.Atoi(costToParam)
 		if err != nil && len(costToParam) > 0 {
 			JSON(w, http.StatusBadRequest, util.Response{
-				Message: "cost must be an integer",
+				Status: "cost must be an integer",
 			})
 			return
 		}
@@ -150,7 +150,7 @@ func (h *HttpHostelHandler) SearchHostels(w http.ResponseWriter, r *http.Request
 		capacity, err := strconv.Atoi(capacityParam)
 		if err != nil {
 			JSON(w, http.StatusBadRequest, util.Response{
-				Message: "capacity must be an integer",
+				Status: "capacity must be an integer",
 			})
 			return
 		}
@@ -170,7 +170,7 @@ func (h *HttpHostelHandler) SearchHostels(w http.ResponseWriter, r *http.Request
 }
 
 func (h *HttpHostelHandler) GetSuggestHostels(w http.ResponseWriter, r *http.Request) {
-	userId := r.Context().Value("user_id").(string)
+	userId := r.Context().Value("userId").(string)
 	hostels, total, err := h.service.GetSuggestHostels(r.Context(), userId)
 	if err != nil {
 		h.logError(r.Context(), err.Error())
@@ -187,11 +187,11 @@ func (h *HttpHostelHandler) GetHostelById(w http.ResponseWriter, r *http.Request
 	code := mux.Vars(r)["code"]
 	if len(code) == 0 {
 		JSON(w, http.StatusBadRequest, util.Response{
-			Message: util.ErrorCodeEmpty.Error(),
+			Status: util.ErrorCodeEmpty.Error(),
 		})
 		return
 	}
-	userId := r.Context().Value("user_id").(string)
+	userId := r.Context().Value("userId").(string)
 	hostel, err := h.service.GetHostelById(r.Context(), code, userId)
 	if err != nil {
 		h.logError(r.Context(), err.Error())
@@ -209,7 +209,7 @@ func (h *HttpHostelHandler) CreateHostel(w http.ResponseWriter, r *http.Request)
 	defer r.Body.Close()
 	if er1 != nil {
 		JSON(w, http.StatusBadRequest, util.Response{
-			Message: er1.Error(),
+			Status: er1.Error(),
 		})
 		return
 	}
@@ -230,7 +230,7 @@ func (h *HttpHostelHandler) CreateHostel(w http.ResponseWriter, r *http.Request)
 		h.logError(r.Context(), er3.Error())
 		if util.IsDefinedErrorType(er3) {
 			JSON(w, http.StatusBadRequest, util.Response{
-				Message: er3.Error(),
+				Status: er3.Error(),
 			})
 		} else {
 			http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
@@ -248,14 +248,14 @@ func (h *HttpHostelHandler) UpdateHostel(w http.ResponseWriter, r *http.Request)
 	defer r.Body.Close()
 	if er1 != nil {
 		JSON(w, http.StatusBadRequest, util.Response{
-			Message: er1.Error(),
+			Status: er1.Error(),
 		})
 		return
 	}
 	code := mux.Vars(r)["code"]
 	if len(code) == 0 {
 		JSON(w, http.StatusBadRequest, util.Response{
-			Message: util.ErrorCodeEmpty.Error(),
+			Status: util.ErrorCodeEmpty.Error(),
 		})
 		return
 	}
@@ -263,7 +263,7 @@ func (h *HttpHostelHandler) UpdateHostel(w http.ResponseWriter, r *http.Request)
 		hostel.Id = code
 	} else if code != hostel.Id {
 		JSON(w, http.StatusBadRequest, util.Response{
-			Message: util.ErrorCodeNotMatch.Error(),
+			Status: util.ErrorCodeNotMatch.Error(),
 		})
 		return
 	}
@@ -283,7 +283,7 @@ func (h *HttpHostelHandler) UpdateHostel(w http.ResponseWriter, r *http.Request)
 		h.logError(r.Context(), er3.Error())
 		if util.IsDefinedErrorType(er3) {
 			JSON(w, http.StatusBadRequest, util.Response{
-				Message: er3.Error(),
+				Status: er3.Error(),
 			})
 		} else {
 			http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
@@ -299,7 +299,7 @@ func (h *HttpHostelHandler) DeleteHostel(w http.ResponseWriter, r *http.Request)
 	code := mux.Vars(r)["code"]
 	if len(code) == 0 {
 		JSON(w, http.StatusBadRequest, util.Response{
-			Message: util.ErrorCodeEmpty.Error(),
+			Status: util.ErrorCodeEmpty.Error(),
 		})
 		return
 	}

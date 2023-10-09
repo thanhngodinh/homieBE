@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"time"
 
@@ -53,7 +52,7 @@ func (h *HttpUserHandler) Login(w http.ResponseWriter, r *http.Request) {
 			Token:   token,
 			Profile: nil,
 		}
-		JSON(w, http.StatusOK, res)
+		util.Json(w, http.StatusOK, res)
 	}
 }
 
@@ -74,15 +73,27 @@ func (h *HttpUserHandler) Register(w http.ResponseWriter, r *http.Request) {
 		user.Password = string(hashedPassword)
 		now := time.Now()
 		user.CreatedAt = &now
-		res, er3 := h.service.Create(r.Context(), &user)
-		JSON(w, http.StatusOK, util.Response{
-			Data: res,
-		})
+		err := h.service.Create(r.Context(), &user)
+		if err != nil {
+			util.Json(w, http.StatusInternalServerError, util.Response{Status: err.Error()})
+			return
+		}
+		util.JsonOK(w)
 	}
 }
 
-func JSON(w http.ResponseWriter, code int, res interface{}) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	return json.NewEncoder(w).Encode(res)
+func (h *HttpUserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
+	req := &domain.UpdatePasswordRequest{}
+	userId := r.Context().Value("userId").(string)
+	err := core.Decode(w, r, req)
+	if err != nil {
+		util.Json(w, http.StatusBadRequest, util.Response{Status: err.Error()})
+		return
+	}
+	err = h.service.UpdatePassword(r.Context(), userId, req.OldPassword, req.NewPassword)
+	if err != nil {
+		util.Json(w, http.StatusInternalServerError, util.Response{Status: err.Error()})
+		return
+	}
+	util.JsonOK(w)
 }

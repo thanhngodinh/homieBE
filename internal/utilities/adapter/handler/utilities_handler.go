@@ -46,7 +46,7 @@ func (h *HttpUtilitiesHandler) CreateUtilities(w http.ResponseWriter, r *http.Re
 	defer r.Body.Close()
 	if er1 != nil {
 		JSON(w, http.StatusBadRequest, util.Response{
-			Message: er1.Error(),
+			Status: er1.Error(),
 		})
 		return
 	}
@@ -67,7 +67,7 @@ func (h *HttpUtilitiesHandler) CreateUtilities(w http.ResponseWriter, r *http.Re
 		h.logError(r.Context(), er3.Error())
 		if util.IsDefinedErrorType(er3) {
 			JSON(w, http.StatusBadRequest, util.Response{
-				Message: er3.Error(),
+				Status: er3.Error(),
 			})
 		} else {
 			http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
@@ -85,14 +85,14 @@ func (h *HttpUtilitiesHandler) UpdateUtilities(w http.ResponseWriter, r *http.Re
 	defer r.Body.Close()
 	if er1 != nil {
 		JSON(w, http.StatusBadRequest, util.Response{
-			Message: er1.Error(),
+			Status: er1.Error(),
 		})
 		return
 	}
 	code := mux.Vars(r)["id"]
 	if len(code) == 0 {
 		JSON(w, http.StatusBadRequest, util.Response{
-			Message: util.ErrorCodeEmpty.Error(),
+			Status: util.ErrorCodeEmpty.Error(),
 		})
 		return
 	}
@@ -100,7 +100,7 @@ func (h *HttpUtilitiesHandler) UpdateUtilities(w http.ResponseWriter, r *http.Re
 		utilities.Id = code
 	} else if code != utilities.Id {
 		JSON(w, http.StatusBadRequest, util.Response{
-			Message: util.ErrorCodeNotMatch.Error(),
+			Status: util.ErrorCodeNotMatch.Error(),
 		})
 		return
 	}
@@ -120,7 +120,7 @@ func (h *HttpUtilitiesHandler) UpdateUtilities(w http.ResponseWriter, r *http.Re
 		h.logError(r.Context(), er3.Error())
 		if util.IsDefinedErrorType(er3) {
 			JSON(w, http.StatusBadRequest, util.Response{
-				Message: er3.Error(),
+				Status: er3.Error(),
 			})
 		} else {
 			http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
@@ -136,7 +136,7 @@ func (h *HttpUtilitiesHandler) DeleteUtilities(w http.ResponseWriter, r *http.Re
 	code := mux.Vars(r)["id"]
 	if len(code) == 0 {
 		JSON(w, http.StatusBadRequest, util.Response{
-			Message: util.ErrorCodeEmpty.Error(),
+			Status: util.ErrorCodeEmpty.Error(),
 		})
 		return
 	}

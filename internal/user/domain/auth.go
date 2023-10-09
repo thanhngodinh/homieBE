@@ -16,3 +16,8 @@ type Profile struct {
 	Name   string `json:"name"`
 	Avatar string `json:"avatar,omitempty"`
 }
+
+type UpdatePasswordRequest struct {
+	OldPassword string `json:"oldPassword"`
+	NewPassword string `json:"newPassword"`
+}

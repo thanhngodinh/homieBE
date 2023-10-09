@@ -2,16 +2,20 @@ package service
 
 import (
 	"context"
+	"errors"
 	hostel_port "hostel-service/internal/hostel/port"
 	"hostel-service/internal/user/domain"
 	"hostel-service/internal/user/port"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService interface {
 	UpdateUserSuggest(ctx context.Context, userUpdate *domain.UpdateUserSuggest) error
 	GetUserSuggest(ctx context.Context, userId string) (*domain.UserSuggest, error)
 	GetByUsername(ctx context.Context, username string) (*domain.User, error)
-	Create(ctx context.Context, user *domain.User) (int64, error)
+	UpdatePassword(ctx context.Context, userId string, oldPassword string, newPassword string) error
+	Create(ctx context.Context, user *domain.User) error
 }
 
 func NewUserService(
@@ -41,6 +45,21 @@ func (s *userService) GetByUsername(ctx context.Context, username string) (*doma
 	return s.userRepo.GetByUsername(ctx, username)
 }
 
-func (s *userService) Create(ctx context.Context, user *domain.User) (int64, error) {
+func (s *userService) Create(ctx context.Context, user *domain.User) error {
 	return s.userRepo.Create(ctx, user)
+}
+
+func (s *userService) UpdatePassword(ctx context.Context, userId string, oldPassword string, newPassword string) error {
+	user, err := s.userRepo.GetById(ctx, userId)
+	if err != nil {
+		return err
+	}
+	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(oldPassword)) != nil {
+		return errors.New("password mismatch")
+	}
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	return s.userRepo.UpdatePassword(ctx, userId, string(hashedPassword))
 }

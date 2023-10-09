@@ -20,6 +20,7 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 	userRouter.HandleFunc("/posts", app.My.GetMyPosts).Methods(GET)
 	userRouter.HandleFunc("/posts/{code}", app.Hostel.UpdateHostel).Methods(PUT)
 	userRouter.HandleFunc("/like/{postId}", app.My.LikePost).Methods(POST)
+	userRouter.HandleFunc("/password", app.User.UpdatePassword).Methods(PUT)
 	userRouter.Use(internalMid.Authenticate)
 
 	r.HandleFunc("/hostels", app.Hostel.GetHostels).Methods(GET)
