@@ -36,7 +36,7 @@ func (h *HttpUtilitiesHandler) GetAllUtilities(w http.ResponseWriter, r *http.Re
 		h.logError(r.Context(), err.Error())
 		http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
 	} else {
-		JSON(w, http.StatusOK, utilities)
+		util.Json(w, http.StatusOK, utilities)
 	}
 }
 
@@ -45,7 +45,7 @@ func (h *HttpUtilitiesHandler) CreateUtilities(w http.ResponseWriter, r *http.Re
 	er1 := json.NewDecoder(r.Body).Decode(&utilities)
 	defer r.Body.Close()
 	if er1 != nil {
-		JSON(w, http.StatusBadRequest, util.Response{
+		util.Json(w, http.StatusBadRequest, util.Response{
 			Status: er1.Error(),
 		})
 		return
@@ -58,7 +58,7 @@ func (h *HttpUtilitiesHandler) CreateUtilities(w http.ResponseWriter, r *http.Re
 	}
 	if len(errors) > 0 {
 		h.logError(r.Context(), er2.Error())
-		JSON(w, http.StatusUnprocessableEntity, errors)
+		util.Json(w, http.StatusUnprocessableEntity, errors)
 		return
 	}
 	utilities.CreatedBy = r.Context().Value("userId").(string)
@@ -66,14 +66,14 @@ func (h *HttpUtilitiesHandler) CreateUtilities(w http.ResponseWriter, r *http.Re
 	if er3 != nil {
 		h.logError(r.Context(), er3.Error())
 		if util.IsDefinedErrorType(er3) {
-			JSON(w, http.StatusBadRequest, util.Response{
+			util.Json(w, http.StatusBadRequest, util.Response{
 				Status: er3.Error(),
 			})
 		} else {
 			http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
 		}
 	} else {
-		JSON(w, http.StatusCreated, util.Response{
+		util.Json(w, http.StatusCreated, util.Response{
 			Data: utilities,
 		})
 	}
@@ -84,14 +84,14 @@ func (h *HttpUtilitiesHandler) UpdateUtilities(w http.ResponseWriter, r *http.Re
 	er1 := json.NewDecoder(r.Body).Decode(&utilities)
 	defer r.Body.Close()
 	if er1 != nil {
-		JSON(w, http.StatusBadRequest, util.Response{
+		util.Json(w, http.StatusBadRequest, util.Response{
 			Status: er1.Error(),
 		})
 		return
 	}
 	code := mux.Vars(r)["id"]
 	if len(code) == 0 {
-		JSON(w, http.StatusBadRequest, util.Response{
+		util.Json(w, http.StatusBadRequest, util.Response{
 			Status: util.ErrorCodeEmpty.Error(),
 		})
 		return
@@ -99,7 +99,7 @@ func (h *HttpUtilitiesHandler) UpdateUtilities(w http.ResponseWriter, r *http.Re
 	if len(utilities.Id) == 0 {
 		utilities.Id = code
 	} else if code != utilities.Id {
-		JSON(w, http.StatusBadRequest, util.Response{
+		util.Json(w, http.StatusBadRequest, util.Response{
 			Status: util.ErrorCodeNotMatch.Error(),
 		})
 		return
@@ -112,21 +112,21 @@ func (h *HttpUtilitiesHandler) UpdateUtilities(w http.ResponseWriter, r *http.Re
 	}
 	if len(errors) > 0 {
 		h.logError(r.Context(), er2.Error())
-		JSON(w, http.StatusUnprocessableEntity, errors)
+		util.Json(w, http.StatusUnprocessableEntity, errors)
 		return
 	}
 	_, er3 := h.service.UpdateUtilities(r.Context(), &utilities)
 	if er3 != nil {
 		h.logError(r.Context(), er3.Error())
 		if util.IsDefinedErrorType(er3) {
-			JSON(w, http.StatusBadRequest, util.Response{
+			util.Json(w, http.StatusBadRequest, util.Response{
 				Status: er3.Error(),
 			})
 		} else {
 			http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
 		}
 	} else {
-		JSON(w, http.StatusOK, util.Response{
+		util.Json(w, http.StatusOK, util.Response{
 			Data: utilities,
 		})
 	}
@@ -135,7 +135,7 @@ func (h *HttpUtilitiesHandler) UpdateUtilities(w http.ResponseWriter, r *http.Re
 func (h *HttpUtilitiesHandler) DeleteUtilities(w http.ResponseWriter, r *http.Request) {
 	code := mux.Vars(r)["id"]
 	if len(code) == 0 {
-		JSON(w, http.StatusBadRequest, util.Response{
+		util.Json(w, http.StatusBadRequest, util.Response{
 			Status: util.ErrorCodeEmpty.Error(),
 		})
 		return
@@ -145,19 +145,13 @@ func (h *HttpUtilitiesHandler) DeleteUtilities(w http.ResponseWriter, r *http.Re
 		http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
 	} else {
 		if res == 1 {
-			JSON(w, http.StatusOK, util.Response{
+			util.Json(w, http.StatusOK, util.Response{
 				Data: fmt.Sprintf("delete %s successfully", code),
 			})
 		} else {
-			JSON(w, http.StatusNotFound, util.Response{
+			util.Json(w, http.StatusNotFound, util.Response{
 				Data: fmt.Sprintf("not found %s", code),
 			})
 		}
 	}
-}
-
-func JSON(w http.ResponseWriter, code int, res interface{}) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	return json.NewEncoder(w).Encode(res)
 }

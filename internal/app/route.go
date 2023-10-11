@@ -23,8 +23,6 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 	userRouter.HandleFunc("/password", app.User.UpdatePassword).Methods(PUT)
 	userRouter.Use(internalMid.Authenticate)
 
-	r.HandleFunc("/hostels", app.Hostel.GetHostels).Methods(GET)
-
 	hostelRouter := r.PathPrefix("/hostels").Subrouter()
 	hostelRouter.HandleFunc("", app.Hostel.CreateHostel).Methods(POST)
 	hostelRouter.HandleFunc("/{code}", app.Hostel.UpdateHostel).Methods(PUT)
@@ -32,7 +30,8 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 	hostelRouter.Use(internalMid.Authenticate)
 
 	hostelPublicRouter := r.PathPrefix("/hostels").Subrouter()
-	hostelPublicRouter.HandleFunc("/search", app.Hostel.SearchHostels).Methods(GET)
+	hostelPublicRouter.HandleFunc("", app.Hostel.GetHostels).Methods(GET)
+	hostelPublicRouter.HandleFunc("/search", app.Hostel.SearchHostels).Methods(POST)
 	hostelPublicRouter.HandleFunc("/suggest", app.Hostel.GetSuggestHostels).Methods(GET)
 	hostelPublicRouter.HandleFunc("/{code}", app.Hostel.GetHostelById).Methods(GET)
 	hostelPublicRouter.Use(internalMid.PublicAuth)

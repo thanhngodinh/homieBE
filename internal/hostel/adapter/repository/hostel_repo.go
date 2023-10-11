@@ -16,82 +16,79 @@ type HostelAdapter struct {
 	DB *gorm.DB
 }
 
-func (r *HostelAdapter) GetHostels(ctx context.Context, hostel *domain.HostelFilter) ([]domain.Hostel, int64, error) {
+func (r *HostelAdapter) GetHostels(ctx context.Context, filter *domain.HostelFilter, userId string) ([]domain.Hostel, int64, error) {
 	var (
 		tx     *gorm.DB
 		hotels []domain.Hostel
 	)
 
-	tx = r.DB.Table("hostels")
-	if hostel.Name != nil && len(*hostel.Name) > 0 {
-		tx = tx.Where("name ilike ?", fmt.Sprintf("%%%v%%", *hostel.Name))
+	tx = r.DB.Table("hostels").
+		Select(fmt.Sprintf(`
+	(select true from user_like_posts where user_like_posts.post_id = hostels.id and user_like_posts.user_id = '%v') as "is_liked",
+	array_remove(array_agg(hostels_utilities.utilities_id), NULL) as utilities,
+	hostels.*`, userId)).
+		Joins("left join hostels_utilities on hostels_utilities.hostel_id = hostels.id").Group("hostels.id")
+	if filter.Name != nil && len(*filter.Name) > 0 {
+		tx = tx.Where("name ilike ?", fmt.Sprintf("%%%v%%", *filter.Name))
 	}
-	if hostel.Province != nil && len(*hostel.Province) > 0 {
-		tx = tx.Where("province ilike ?", fmt.Sprintf("%%%v%%", *hostel.Province))
+	if filter.Province != nil && len(*filter.Province) > 0 {
+		tx = tx.Where("province ilike ?", fmt.Sprintf("%%%v%%", *filter.Province))
 	}
-	if hostel.District != nil && len(*hostel.District) > 0 {
-		tx = tx.Where("district ilike ?", fmt.Sprintf("%%%v%%", *hostel.District))
+	if filter.District != nil && len(*filter.District) > 0 {
+		tx = tx.Where("district ilike ?", fmt.Sprintf("%%%v%%", *filter.District))
 	}
-	if hostel.Ward != nil && len(*hostel.Ward) > 0 {
-		tx = tx.Where("ward = ilike ?", fmt.Sprintf("%%%v%%", *hostel.Ward))
+	if filter.Ward != nil && len(*filter.Ward) > 0 {
+		tx = tx.Where("ward = ilike ?", fmt.Sprintf("%%%v%%", *filter.Ward))
 	}
-	if hostel.Street != nil && len(*hostel.Street) > 0 {
-		tx = tx.Where("street ilike ?", fmt.Sprintf("%%%v%%", *hostel.Street))
+	if filter.Street != nil && len(*filter.Street) > 0 {
+		tx = tx.Where("street ilike ?", fmt.Sprintf("%%%v%%", *filter.Street))
 	}
-	if hostel.Status != nil && len(*hostel.Status) > 0 {
-		tx = tx.Where("status = ?", hostel.Status)
+	if filter.Status != nil && len(*filter.Status) > 0 {
+		tx = tx.Where("status = ?", filter.Status)
 	}
-	if hostel.CostFrom != nil {
-		tx = tx.Where("cost >= ?", hostel.CostFrom)
+	if filter.CostFrom != nil {
+		tx = tx.Where("cost >= ?", filter.CostFrom)
 	}
-	if hostel.CostTo != nil {
-		tx = tx.Where("cost <= ?", hostel.CostTo)
+	if filter.CostTo != nil {
+		tx = tx.Where("cost <= ?", filter.CostTo)
 	}
-	if hostel.DepositFrom != nil {
-		tx = tx.Where("deposit >= ?", hostel.DepositFrom)
+	if filter.DepositFrom != nil {
+		tx = tx.Where("deposit >= ?", filter.DepositFrom)
 	}
-	if hostel.DepositTo != nil {
-		tx = tx.Where("deposit <= ?", hostel.DepositTo)
+	if filter.DepositTo != nil {
+		tx = tx.Where("deposit <= ?", filter.DepositTo)
 	}
-	if hostel.Capacity != nil {
-		tx = tx.Where("capacity = ?", hostel.Capacity)
+	if filter.Capacity != nil {
+		tx = tx.Where("capacity = ?", filter.Capacity)
 	}
-	if hostel.CapacityFrom != nil {
-		tx = tx.Where("capacity >= ?", hostel.CapacityFrom)
+	if filter.CapacityFrom != nil {
+		tx = tx.Where("capacity >= ?", filter.CapacityFrom)
 	}
-	if hostel.CapacityTo != nil {
-		tx = tx.Where("capacity <= ?", hostel.CapacityTo)
+	if filter.CapacityTo != nil {
+		tx = tx.Where("capacity <= ?", filter.CapacityTo)
 	}
-	if hostel.CreatedAt != nil {
-		tx = tx.Where("created_at = ?", hostel.CreatedAt)
+	if filter.CreatedAt != nil {
+		tx = tx.Where("created_at = ?", filter.CreatedAt)
 	}
-	if hostel.CreatedBy != nil && len(*hostel.CreatedBy) > 0 {
-		tx = tx.Where("created_by = ?", hostel.CreatedBy)
+	if filter.CreatedBy != nil && len(*filter.CreatedBy) > 0 {
+		tx = tx.Where("created_by = ?", filter.CreatedBy)
 	}
-	res1 := tx.Find(&hotels)
+	if len(filter.Utilities) > 0 {
+		tx = tx.Where("? <@ (select array_agg(hostels_utilities.utilities_id) from hostels_utilities where hostels_utilities.hostel_id = hostels.id)", filter.Utilities)
+	}
+	res1 := tx.Scan(&hotels)
 	total := res1.RowsAffected
-	res2 := tx.Order(hostel.Sort).Limit(hostel.PageSize).Offset(hostel.PageIdx * hostel.PageSize).Find(&hotels)
+	res2 := tx.Order(filter.Sort).Limit(filter.PageSize).Offset(filter.PageIdx * filter.PageSize).Scan(&hotels)
 	return hotels, total, res2.Error
 }
 
 func (r *HostelAdapter) GetHostelById(ctx context.Context, id string) (*domain.Hostel, error) {
 	var hostel domain.Hostel
 
-	r.DB.Table("hostels").Where("id = ?", id).First(&hostel)
-	rows, err := r.DB.Table("hostels_utilities").Select("utilities_id").Where("hostel_id = ?", id).Rows()
-	if err != nil {
-		return &hostel, err
-	}
-	for rows.Next() {
-		var utility string
-		if err := rows.Scan(&utility); err != nil {
-			return &hostel, err
-		}
-		hostel.Utilities = append(hostel.Utilities, utility)
-	}
-	if err = rows.Err(); err != nil {
-		return &hostel, err
-	}
+	r.DB.Table("hostels").
+		Select("hostels.*, array_remove(array_agg(hostels_utilities.utilities_id), NULL) as utilities").
+		Joins("left join hostels_utilities on hostels_utilities.hostel_id = hostels.id").Group("hostels.id").
+		Where("id = ?", id).First(&hostel)
 	r.DB.Table("hostels").Where("id = ?", id).Updates(map[string]interface{}{"view": hostel.View + 1})
 	return &hostel, nil
 }

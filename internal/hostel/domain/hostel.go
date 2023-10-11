@@ -16,30 +16,31 @@ const (
 )
 
 type Hostel struct {
-	Id               string         `json:"id" gorm:"column:id;primary_key" example:"07e7a76c-1bbb-11ed-861d-0242ac120002" swaggerignore:"true"`
-	Name             string         `json:"name" gorm:"column:name" example:"Robert Robertson"`
-	Province         string         `json:"province,omitempty" gorm:"column:province" example:"Titao"`
-	District         string         `json:"district,omitempty" gorm:"column:district" example:"Bedford"`
-	Ward             string         `json:"ward,omitempty" gorm:"column:ward" example:"Bedford"`
-	Street           string         `json:"street,omitempty" gorm:"column:street" example:"144 J B Hazra Road"`
-	Status           HostelStatus   `json:"status,omitempty" gorm:"column:status;type:text" example:"A"`
-	Cost             int            `json:"cost,omitempty" gorm:"column:cost" example:"1000000"`
-	Deposit          int            `json:"deposit,omitempty" gorm:"column:deposit" example:"1000000"`
-	ElectricityPrice int            `json:"electricityPrice,omitempty" gorm:"column:electricity_price" example:"100000"`
-	WaterPrice       int            `json:"waterPrice,omitempty" gorm:"column:water_price" example:"100000"`
-	ParkingPrice     int            `json:"parkingPrice,omitempty" gorm:"column:parking_price" example:"100000"`
-	ServicePrice     int            `json:"servicePrice,omitempty" gorm:"column:service_price" example:"100000"`
-	Capacity         int            `json:"capacity,omitempty" gorm:"column:capacity" example:"1"`
-	Area             int            `json:"area,omitempty" gorm:"column:area" example:"20"`
-	Phone            string         `json:"phone,omitempty" gorm:"column:phone" example:"0987654321"`
+	Id               string         `json:"id" gorm:"column:id;primary_key"`
+	Name             string         `json:"name" gorm:"column:name"`
+	Province         string         `json:"province,omitempty" gorm:"column:province"`
+	District         string         `json:"district,omitempty" gorm:"column:district"`
+	Ward             string         `json:"ward,omitempty" gorm:"column:ward"`
+	Street           string         `json:"street,omitempty" gorm:"column:street"`
+	Status           HostelStatus   `json:"status,omitempty" gorm:"column:status;type:text"`
+	Cost             int            `json:"cost,omitempty" gorm:"column:cost"`
+	Deposit          int            `json:"deposit,omitempty" gorm:"column:deposit"`
+	ElectricityPrice int            `json:"electricityPrice,omitempty" gorm:"column:electricity_price"`
+	WaterPrice       int            `json:"waterPrice,omitempty" gorm:"column:water_price"`
+	ParkingPrice     int            `json:"parkingPrice,omitempty" gorm:"column:parking_price"`
+	ServicePrice     int            `json:"servicePrice,omitempty" gorm:"column:service_price"`
+	Capacity         int            `json:"capacity,omitempty" gorm:"column:capacity"`
+	Area             int            `json:"area,omitempty" gorm:"column:area"`
+	Phone            string         `json:"phone,omitempty" gorm:"column:phone"`
 	ImageUrl         pq.StringArray `json:"imageUrl,omitempty" gorm:"column:image_url;type:text[]"`
-	Utilities        []string       `json:"utilities,omitempty" gorm:"-"`
-	View             int            `json:"-" gorm:"column:view" example:"20"`
-	Description      string         `json:"description,omitempty" gorm:"column:description" example:"Nha tro sieu dep"`
-	CreatedAt        time.Time      `json:"createdAt,omitempty" gorm:"colum:created_at" example:"2006-01-02 03:04:07" swaggerignore:"true"`
-	CreatedBy        string         `json:"createdBy,omitempty" gorm:"colum:created_by" example:"07e7a76c-1bbb-11ed-861d-0242ac120002" swaggerignore:"true"`
-	UpdatedAt        *time.Time     `json:"updatedAt,omitempty" gorm:"colum:updated_at" example:"2006-01-02 03:04:07" swaggerignore:"true"`
-	UpdatedBy        *string        `json:"updatedBy,omitempty" gorm:"colum:updated_by" example:"07e7a76c-1bbb-11ed-861d-0242ac120002" swaggerignore:"true"`
+	Utilities        pq.StringArray `json:"utilities,omitempty" gorm:"utilities;type:text[]"`
+	IsLiked          bool           `json:"isLiked" gorm:"is_liked"`
+	View             int            `json:"-" gorm:"column:view"`
+	Description      string         `json:"description,omitempty" gorm:"column:description"`
+	CreatedAt        time.Time      `json:"createdAt,omitempty" gorm:"colum:created_at"`
+	CreatedBy        string         `json:"createdBy,omitempty" gorm:"colum:created_by"`
+	UpdatedAt        *time.Time     `json:"updatedAt,omitempty" gorm:"colum:updated_at"`
+	UpdatedBy        *string        `json:"updatedBy,omitempty" gorm:"colum:updated_by"`
 	DeletedAt        gorm.DeletedAt `json:"-"`
 }
 

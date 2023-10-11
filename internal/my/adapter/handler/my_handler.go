@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -30,7 +29,7 @@ func (h *HttpMyHandler) GetMyPostLiked(w http.ResponseWriter, r *http.Request) {
 		h.logError(r.Context(), err.Error())
 		http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
 	} else {
-		JSON(w, http.StatusOK, util.Response{
+		util.Json(w, http.StatusOK, util.Response{
 			Data:  res.Data,
 			Total: res.Total,
 		})
@@ -44,7 +43,7 @@ func (h *HttpMyHandler) GetMyPosts(w http.ResponseWriter, r *http.Request) {
 		h.logError(r.Context(), err.Error())
 		http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
 	} else {
-		JSON(w, http.StatusOK, util.Response{
+		util.Json(w, http.StatusOK, util.Response{
 			Data:  res.Data,
 			Total: res.Total,
 		})
@@ -55,7 +54,7 @@ func (h *HttpMyHandler) LikePost(w http.ResponseWriter, r *http.Request) {
 	userId := r.Context().Value("userId").(string)
 	postId := mux.Vars(r)["postId"]
 	if len(postId) == 0 {
-		JSON(w, http.StatusBadRequest, util.Response{
+		util.Json(w, http.StatusBadRequest, util.Response{
 			Status: util.ErrorPostIdEmpty.Error(),
 		})
 		return
@@ -66,19 +65,13 @@ func (h *HttpMyHandler) LikePost(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
 		if res == 1 {
-			JSON(w, http.StatusOK, util.Response{
+			util.Json(w, http.StatusOK, util.Response{
 				Data: fmt.Sprintf("update like state successfully"),
 			})
 		} else {
-			JSON(w, http.StatusNotFound, util.Response{
+			util.Json(w, http.StatusNotFound, util.Response{
 				Data: fmt.Sprintf("not found"),
 			})
 		}
 	}
-}
-
-func JSON(w http.ResponseWriter, code int, res interface{}) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	return json.NewEncoder(w).Encode(res)
 }

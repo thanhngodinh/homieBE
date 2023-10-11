@@ -12,8 +12,8 @@ import (
 )
 
 type HostelService interface {
-	GetHostels(ctx context.Context, hostel *domain.HostelFilter) ([]domain.Hostel, int64, error)
-	SearchHostels(ctx context.Context, hostel *domain.HostelFilter) ([]domain.Hostel, int64, error)
+	GetHostels(ctx context.Context, hostel *domain.HostelFilter, userId string) ([]domain.Hostel, int64, error)
+	SearchHostels(ctx context.Context, hostel *domain.HostelFilter, userId string) ([]domain.Hostel, int64, error)
 	GetSuggestHostels(ctx context.Context, userId string) ([]domain.Hostel, int64, error)
 	GetHostelById(ctx context.Context, code string, userId string) (*domain.Hostel, error)
 	CreateHostel(ctx context.Context, hostel *domain.Hostel) (int64, error)
@@ -36,12 +36,12 @@ type hostelService struct {
 	userRepo   user_port.UserRepository
 }
 
-func (s *hostelService) GetHostels(ctx context.Context, hostel *domain.HostelFilter) ([]domain.Hostel, int64, error) {
-	return s.repository.GetHostels(ctx, hostel)
+func (s *hostelService) GetHostels(ctx context.Context, hostel *domain.HostelFilter, userId string) ([]domain.Hostel, int64, error) {
+	return s.repository.GetHostels(ctx, hostel, userId)
 }
 
-func (s *hostelService) SearchHostels(ctx context.Context, hostel *domain.HostelFilter) ([]domain.Hostel, int64, error) {
-	return s.repository.GetHostels(ctx, hostel)
+func (s *hostelService) SearchHostels(ctx context.Context, hostel *domain.HostelFilter, userId string) ([]domain.Hostel, int64, error) {
+	return s.repository.GetHostels(ctx, hostel, userId)
 }
 
 func (s *hostelService) GetSuggestHostels(ctx context.Context, userId string) ([]domain.Hostel, int64, error) {
@@ -51,7 +51,7 @@ func (s *hostelService) GetSuggestHostels(ctx context.Context, userId string) ([
 			PageIdx:  0,
 			Sort:     "view desc",
 		}
-		return s.repository.GetHostels(ctx, hostel)
+		return s.repository.GetHostels(ctx, hostel, userId)
 	}
 	userSuggest, err := s.userRepo.GetUserSuggest(ctx, userId)
 	if err != nil {
@@ -72,7 +72,7 @@ func (s *hostelService) GetSuggestHostels(ctx context.Context, userId string) ([
 		PageIdx:      0,
 		Sort:         "view desc",
 	}
-	hostels, total, err := s.repository.GetHostels(ctx, hostel)
+	hostels, total, err := s.repository.GetHostels(ctx, hostel, userId)
 	if total < 10 {
 		hostel := &domain.HostelFilter{
 			Province: &userSuggest.Province,
@@ -80,7 +80,7 @@ func (s *hostelService) GetSuggestHostels(ctx context.Context, userId string) ([
 			PageIdx:  0,
 			Sort:     "view asc",
 		}
-		addHostels, addTotal, _ := s.repository.GetHostels(ctx, hostel)
+		addHostels, addTotal, _ := s.repository.GetHostels(ctx, hostel, userId)
 		hostels = append(hostels, addHostels...)
 		total += addTotal
 	}
