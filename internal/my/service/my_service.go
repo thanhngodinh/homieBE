@@ -12,6 +12,8 @@ type MyService interface {
 	GetMyPostLiked(ctx context.Context, userId string) (*hostel_domain.GetHostelsResponse, error)
 	GetMyPosts(ctx context.Context, userId string) (*hostel_domain.GetHostelsResponse, error)
 	LikePost(ctx context.Context, userId string, postId string) (int64, error)
+	GetMyProfile(ctx context.Context, userId string) (*domain.User, error)
+	UpdateMyProfile(ctx context.Context, user *domain.UpdateMyProfileReq) error
 }
 
 func NewMyService(
@@ -57,4 +59,12 @@ func (s *myService) LikePost(ctx context.Context, userId string, postId string) 
 		PostId: postId,
 	}
 	return s.myRepo.LikePost(ctx, up)
+}
+
+func (s *myService) GetMyProfile(ctx context.Context, userId string) (*domain.User, error) {
+	return s.myRepo.GetMyProfile(ctx, userId)
+}
+
+func (s *myService) UpdateMyProfile(ctx context.Context, user *domain.UpdateMyProfileReq) error {
+	return s.myRepo.UpdateMyProfile(ctx, user)
 }

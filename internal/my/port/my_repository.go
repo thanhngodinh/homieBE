@@ -10,4 +10,6 @@ type MyRepository interface {
 	GetMyPostLiked(ctx context.Context, userId string) ([]hostel_domain.Hostel, int64, error)
 	GetMyPosts(ctx context.Context, userId string) ([]hostel_domain.Hostel, int64, error)
 	LikePost(ctx context.Context, up domain.LikePost) (int64, error)
+	GetMyProfile(ctx context.Context, userId string) (*domain.User, error)
+	UpdateMyProfile(ctx context.Context, user *domain.UpdateMyProfileReq) error
 }

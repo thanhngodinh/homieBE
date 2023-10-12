@@ -41,3 +41,14 @@ func (r *MyAdapter) LikePost(ctx context.Context, up domain.LikePost) (int64, er
 	}
 	return res.RowsAffected, res.Error
 }
+
+func (r *MyAdapter) UpdateMyProfile(ctx context.Context, user *domain.UpdateMyProfileReq) error {
+	res := r.DB.Table("users").Updates(user)
+	return res.Error
+}
+
+func (r *MyAdapter) GetMyProfile(ctx context.Context, userId string) (*domain.User, error) {
+	res := &domain.User{}
+	r.DB.Table("users").Where("id = ?", userId).First(res)
+	return res, nil
+}
