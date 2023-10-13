@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -96,4 +97,28 @@ func (h *HttpUserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	util.JsonOK(w)
+}
+
+func (h *HttpUserHandler) SearchRoommates(w http.ResponseWriter, r *http.Request) {
+	filter := &domain.RoommateFilter{
+		Sort: "created_at desc",
+	}
+	err := json.NewDecoder(r.Body).Decode(filter)
+	defer r.Body.Close()
+	if err != nil {
+		util.Json(w, http.StatusBadRequest, util.Response{
+			Status: err.Error(),
+		})
+		return
+	}
+	res, total, err := h.service.SearchRoommates(r.Context(), filter)
+	if err != nil {
+		h.logError(r.Context(), err.Error())
+		http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
+	} else {
+		util.Json(w, http.StatusOK, util.Response{
+			Data:  res,
+			Total: total,
+		})
+	}
 }

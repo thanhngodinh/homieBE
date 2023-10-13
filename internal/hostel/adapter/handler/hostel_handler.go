@@ -80,6 +80,7 @@ func (h *HttpHostelHandler) GetHostels(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 }
+
 func (h *HttpHostelHandler) SearchHostels(w http.ResponseWriter, r *http.Request) {
 	hostel := &domain.HostelFilter{
 		Sort: "created_at desc",

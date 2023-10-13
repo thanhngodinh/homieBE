@@ -52,7 +52,7 @@ func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
 
 	// Repo
 	hostelRepository := hostelRepository.NewHostelAdapter(gormDb)
-	userRepository := userRepository.NewUserAdapter(gormDb)
+	userRepository := userRepository.NewUserRepo(gormDb)
 	myRepository := myRepository.NewMyAdapter(gormDb)
 	utilitiesRepository := utilitiesRepository.NewUtilitiesAdapter(gormDb)
 
