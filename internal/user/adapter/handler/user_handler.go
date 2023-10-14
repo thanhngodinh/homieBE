@@ -12,9 +12,9 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 
+	"hostel-service/internal/package/util"
 	"hostel-service/internal/user/domain"
 	"hostel-service/internal/user/service"
-	"hostel-service/internal/util"
 )
 
 func NewUserHandler(service service.UserService, validate func(context.Context, interface{}) ([]sv.ErrorMessage, error), logError func(context.Context, string, ...map[string]interface{})) *HttpUserHandler {

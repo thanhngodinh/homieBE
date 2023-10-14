@@ -53,7 +53,8 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 	authRouter.HandleFunc("/register", app.User.Register).Methods(POST)
 	authRouter.HandleFunc("/login", app.User.Login).Methods(POST)
 
-	// r.PathPrefix("/").Handler(httpSwagger.WrapHandler)
+	chatRouter := r.PathPrefix("/chat").Subrouter()
+	chatRouter.HandleFunc("", app.Chat.InitConversation)
 
 	return nil
 }

@@ -11,7 +11,7 @@ import (
 
 	"hostel-service/internal/my/domain"
 	"hostel-service/internal/my/service"
-	"hostel-service/internal/util"
+	"hostel-service/internal/package/util"
 )
 
 func NewMyHandler(service service.MyService, validate func(context.Context, interface{}) ([]sv.ErrorMessage, error), logError func(context.Context, string, ...map[string]interface{})) *HttpMyHandler {

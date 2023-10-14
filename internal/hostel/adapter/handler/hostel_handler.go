@@ -12,7 +12,7 @@ import (
 
 	"hostel-service/internal/hostel/domain"
 	"hostel-service/internal/hostel/service"
-	"hostel-service/internal/util"
+	"hostel-service/internal/package/util"
 )
 
 func NewHostelHandler(

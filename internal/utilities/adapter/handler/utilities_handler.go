@@ -9,7 +9,7 @@ import (
 	sv "github.com/core-go/core"
 	"github.com/gorilla/mux"
 
-	"hostel-service/internal/util"
+	"hostel-service/internal/package/util"
 	"hostel-service/internal/utilities/domain"
 	"hostel-service/internal/utilities/service"
 )

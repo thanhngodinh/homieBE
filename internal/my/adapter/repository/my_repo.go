@@ -4,7 +4,7 @@ import (
 	"context"
 	hostel_domain "hostel-service/internal/hostel/domain"
 	"hostel-service/internal/my/domain"
-	"hostel-service/internal/util"
+	"hostel-service/internal/package/util"
 
 	"gorm.io/gorm"
 )

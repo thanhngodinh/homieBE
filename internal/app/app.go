@@ -29,6 +29,11 @@ import (
 	utilitiesRepository "hostel-service/internal/utilities/adapter/repository"
 	utilitiesPort "hostel-service/internal/utilities/port"
 	utilitiesService "hostel-service/internal/utilities/service"
+
+	chatHandler "hostel-service/internal/chat/adapter/handler"
+	// chatRepository "hostel-service/internal/chat/adapter/repository"
+	chatPort "hostel-service/internal/chat/port"
+	chatService "hostel-service/internal/chat/service"
 )
 
 type ApplicationContext struct {
@@ -36,6 +41,7 @@ type ApplicationContext struct {
 	Utilities utilitiesPort.UtilitiesHandler
 	User      userPort.UserHandler
 	My        myPort.MyHandler
+	Chat      chatPort.ChatHandler
 }
 
 func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
@@ -68,10 +74,14 @@ func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
 	myService := myService.NewMyService(myRepository, hostelRepository)
 	myHandler := myHandler.NewMyHandler(myService, validator.Validate, logError)
 
+	chatService := chatService.NewChatService()
+	chatHandler := chatHandler.NewChatHandler(chatService)
+
 	return &ApplicationContext{
 		Hostel:    hostelHandler,
 		Utilities: utilitiesHandler,
 		User:      userHandler,
 		My:        myHandler,
+		Chat:      chatHandler,
 	}, nil
 }
