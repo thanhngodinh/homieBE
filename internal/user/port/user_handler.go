@@ -7,4 +7,5 @@ type UserHandler interface {
 	Login(w http.ResponseWriter, r *http.Request)
 	UpdatePassword(w http.ResponseWriter, r *http.Request)
 	SearchRoommates(w http.ResponseWriter, r *http.Request)
+	GetRoommateById(w http.ResponseWriter, r *http.Request)
 }

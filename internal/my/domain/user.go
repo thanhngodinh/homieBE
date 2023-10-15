@@ -13,8 +13,7 @@ type User struct {
 	DateOfBirth     *time.Time `json:"dateOfBirth,omitempty" gorm:"column:date_of_birth"`
 	Avatar          string     `json:"avatar,omitempty" gorm:"column:avatar_url"`
 	Gender          string     `json:"gender,omitempty" gorm:"column:gender"`
-	FirstName       string     `json:"firstName,omitempty" gorm:"column:first_name"`
-	LastName        string     `json:"lastName,omitempty" gorm:"column:last_name"`
+	Name            string     `json:"name,omitempty" gorm:"column:display_name"`
 	Province        string     `json:"province,omitempty" gorm:"column:province_profile"`
 	District        string     `json:"district,omitempty" gorm:"column:district_profile"`
 	CostFrom        int        `json:"costFrom,omitempty" gorm:"column:cost_from"`

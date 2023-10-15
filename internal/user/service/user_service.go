@@ -17,6 +17,7 @@ type UserService interface {
 	UpdatePassword(ctx context.Context, userId string, oldPassword string, newPassword string) error
 	Create(ctx context.Context, user *domain.User) error
 	SearchRoommates(ctx context.Context, filter *domain.RoommateFilter) ([]domain.Roommate, int64, error)
+	GetRoommateById(ctx context.Context, userId string) (*domain.Roommate, error)
 }
 
 func NewUserService(
@@ -36,6 +37,10 @@ type userService struct {
 
 func (s *userService) SearchRoommates(ctx context.Context, filter *domain.RoommateFilter) ([]domain.Roommate, int64, error) {
 	return s.userRepo.SearchRoommates(ctx, filter)
+}
+
+func (s *userService) GetRoommateById(ctx context.Context, userId string) (*domain.Roommate, error) {
+	return s.userRepo.GetRoommateById(ctx, userId)
 }
 
 func (s *userService) UpdateUserSuggest(ctx context.Context, userUpdate *domain.UpdateUserSuggest) error {

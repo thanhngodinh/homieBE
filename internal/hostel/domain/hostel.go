@@ -38,6 +38,7 @@ type Hostel struct {
 	View             int            `json:"-" gorm:"column:view"`
 	Description      string         `json:"description,omitempty" gorm:"column:description"`
 	CreatedAt        time.Time      `json:"createdAt,omitempty" gorm:"colum:created_at"`
+	EndedAt          time.Time      `json:"endedAt,omitempty" gorm:"colum:ended_at"`
 	CreatedBy        string         `json:"createdBy,omitempty" gorm:"colum:created_by"`
 	UpdatedAt        *time.Time     `json:"updatedAt,omitempty" gorm:"colum:updated_at"`
 	UpdatedBy        *string        `json:"updatedBy,omitempty" gorm:"colum:updated_by"`

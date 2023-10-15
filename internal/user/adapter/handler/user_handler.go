@@ -10,6 +10,7 @@ import (
 	sv "github.com/core-go/core"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 	"golang.org/x/crypto/bcrypt"
 
 	"hostel-service/internal/package/util"
@@ -120,5 +121,23 @@ func (h *HttpUserHandler) SearchRoommates(w http.ResponseWriter, r *http.Request
 			Data:  res,
 			Total: total,
 		})
+	}
+}
+
+func (h *HttpUserHandler) GetRoommateById(w http.ResponseWriter, r *http.Request) {
+	userId := mux.Vars(r)["userId"]
+	if len(userId) == 0 {
+		util.Json(w, http.StatusBadRequest, util.Response{
+			Status: util.ErrorCodeEmpty.Error(),
+		})
+		return
+	}
+	user, err := h.service.GetRoommateById(r.Context(), userId)
+	if err != nil {
+		util.JsonInternalError(w, err)
+	} else if user == nil {
+		util.Json(w, http.StatusNotFound, util.Response{})
+	} else {
+		util.JsonOK(w, user)
 	}
 }

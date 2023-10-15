@@ -3,6 +3,8 @@ package util
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/sirupsen/logrus"
 )
 
 type Response struct {
@@ -12,14 +14,23 @@ type Response struct {
 	Message string      `json:"message,omitempty"`
 }
 
+const Success = "Success"
+const InternalServerError = "Internal Server Error"
+
 func Json(w http.ResponseWriter, code int, res interface{}) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	return json.NewEncoder(w).Encode(res)
 }
 
-const Success = "Success"
-
-func JsonOK(w http.ResponseWriter) error {
+func JsonOK(w http.ResponseWriter, data ...interface{}) error {
+	if data != nil {
+		return Json(w, http.StatusOK, Response{Data: data[0]})
+	}
 	return Json(w, http.StatusOK, Response{Status: Success})
+}
+
+func JsonInternalError(w http.ResponseWriter, err error) error {
+	logrus.Error(err)
+	return Json(w, http.StatusInternalServerError, Response{Message: InternalServerError})
 }

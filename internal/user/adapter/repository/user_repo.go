@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	hostel_domain "hostel-service/internal/hostel/domain"
 	"hostel-service/internal/user/domain"
 
 	"gorm.io/gorm"
@@ -48,27 +49,41 @@ func (r *UserRepo) SearchRoommates(ctx context.Context, filter *domain.RoommateF
 	return roommates, total, res2.Error
 }
 
+func (r *UserRepo) GetRoommateById(ctx context.Context, userId string) (*domain.Roommate, error) {
+	roommate := &domain.Roommate{}
+	res := r.DB.Table("users").Where("id = ?", userId).First(roommate)
+	return roommate, res.Error
+}
+
+func (r *UserRepo) GetUserPosts(ctx context.Context, userId string) ([]hostel_domain.Hostel, int64, error) {
+	hostels := []hostel_domain.Hostel{}
+	res := r.DB.Table("hostels").
+		Where("created_by = ?", userId).
+		Find(&hostels)
+	return hostels, res.RowsAffected, res.Error
+}
+
 func (r *UserRepo) UpdateUserSuggest(ctx context.Context, us *domain.UpdateUserSuggest) error {
 	res := r.DB.Table("users").Updates(us)
 	return res.Error
 }
 
 func (r *UserRepo) GetUserSuggest(ctx context.Context, userId string) (*domain.UserSuggest, error) {
-	res := &domain.UserSuggest{}
-	r.DB.Table("users").Where("id = ?", userId).First(res)
-	return res, nil
+	user := &domain.UserSuggest{}
+	res := r.DB.Table("users").Where("id = ?", userId).First(user)
+	return user, res.Error
 }
 
 func (r *UserRepo) GetByUsername(ctx context.Context, username string) (*domain.User, error) {
 	user := &domain.User{}
-	r.DB.Where("username = ?", username).First(user)
-	return user, nil
+	res := r.DB.Where("username = ?", username).First(user)
+	return user, res.Error
 }
 
 func (r *UserRepo) GetById(ctx context.Context, userId string) (*domain.User, error) {
 	user := &domain.User{}
-	r.DB.Where("id = ?", userId).First(user)
-	return user, nil
+	res := r.DB.Where("id = ?", userId).First(user)
+	return user, res.Error
 }
 
 func (r *UserRepo) Create(ctx context.Context, user *domain.User) error {

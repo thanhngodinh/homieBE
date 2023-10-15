@@ -19,7 +19,6 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 	userRouter.HandleFunc("/liked-posts", app.My.GetMyPostLiked).Methods(GET)
 	userRouter.HandleFunc("/posts", app.My.GetMyPosts).Methods(GET)
 	userRouter.HandleFunc("/posts/{code}", app.Hostel.UpdateHostel).Methods(PUT)
-	userRouter.HandleFunc("/like/{postId}", app.My.LikePost).Methods(POST)
 	userRouter.HandleFunc("/password", app.User.UpdatePassword).Methods(PUT)
 	userRouter.HandleFunc("/profile", app.My.GetMyProfile).Methods(GET)
 	userRouter.HandleFunc("/profile", app.My.UpdateMyProfile).Methods(PUT)
@@ -27,6 +26,7 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 
 	hostelRouter := r.PathPrefix("/hostels").Subrouter()
 	hostelRouter.HandleFunc("", app.Hostel.CreateHostel).Methods(POST)
+	hostelRouter.HandleFunc("/like/{postId}", app.My.LikePost).Methods(POST)
 	hostelRouter.HandleFunc("/{code}", app.Hostel.UpdateHostel).Methods(PUT)
 	hostelRouter.HandleFunc("/{code}", app.Hostel.DeleteHostel).Methods(DELETE)
 	hostelRouter.Use(internalMid.Authenticate)
@@ -40,6 +40,7 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 
 	roommateRouter := r.PathPrefix("/roommates").Subrouter()
 	roommateRouter.HandleFunc("/search", app.User.SearchRoommates).Methods(POST)
+	roommateRouter.HandleFunc("/{userId}", app.User.GetRoommateById).Methods(GET)
 	// roommateRouter.Use(internalMid.PublicAuth)
 
 	r.HandleFunc("/utilities", app.Utilities.GetAllUtilities).Methods(GET)

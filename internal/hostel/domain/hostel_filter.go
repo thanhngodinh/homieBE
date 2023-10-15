@@ -21,8 +21,8 @@ type HostelFilter struct {
 	Utilities    pq.StringArray `json:"utilities,omitempty"`
 	CapacityFrom *int           `json:"-"`
 	CapacityTo   *int           `json:"-"`
-	CreatedAt    *time.Time     `json:"createdAt,omitempty"`
-	CreatedBy    *string        `json:"createdBy,omitempty"`
+	CreatedAt    *time.Time     `json:"-"`
+	CreatedBy    *string        `json:"-"`
 	PageSize     int            `json:"pageSize,omitempty"`
 	PageIdx      int            `json:"pageIdx,omitempty"`
 	Sort         string         `json:"sort,omitempty"`

@@ -7,6 +7,7 @@ import (
 
 type UserRepository interface {
 	SearchRoommates(ctx context.Context, filter *domain.RoommateFilter) ([]domain.Roommate, int64, error)
+	GetRoommateById(ctx context.Context, userId string) (*domain.Roommate, error)
 	GetUserSuggest(ctx context.Context, userId string) (*domain.UserSuggest, error)
 	GetByUsername(ctx context.Context, username string) (*domain.User, error)
 	GetById(ctx context.Context, userId string) (*domain.User, error)
