@@ -33,10 +33,12 @@ type Hostel struct {
 	Area             int            `json:"area,omitempty" gorm:"column:area"`
 	Phone            string         `json:"phone,omitempty" gorm:"column:phone"`
 	ImageUrl         pq.StringArray `json:"imageUrl,omitempty" gorm:"column:image_url;type:text[]"`
-	Utilities        pq.StringArray `json:"utilities,omitempty" gorm:"utilities;type:text[]"`
-	IsLiked          bool           `json:"isLiked" gorm:"is_liked"`
+	Utilities        pq.StringArray `json:"utilities,omitempty" gorm:"utilities;type:text[];->"`
+	IsLiked          bool           `json:"isLiked" gorm:"is_liked;->"`
 	View             int            `json:"-" gorm:"column:view"`
 	Description      string         `json:"description,omitempty" gorm:"column:description"`
+	Author           string         `json:"author" gorm:"author;->"`
+	AuthorAvatar     string         `json:"authorAvatar" gorm:"author_avatar;->"`
 	CreatedAt        time.Time      `json:"createdAt,omitempty" gorm:"colum:created_at"`
 	EndedAt          time.Time      `json:"endedAt,omitempty" gorm:"colum:ended_at"`
 	CreatedBy        string         `json:"createdBy,omitempty" gorm:"colum:created_by"`

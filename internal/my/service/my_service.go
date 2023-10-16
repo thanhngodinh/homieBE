@@ -14,6 +14,7 @@ type MyService interface {
 	LikePost(ctx context.Context, userId string, postId string) (int64, error)
 	GetMyProfile(ctx context.Context, userId string) (*domain.User, error)
 	UpdateMyProfile(ctx context.Context, user *domain.UpdateMyProfileReq) error
+	UpdateMyAvatar(ctx context.Context, user *domain.UpdateMyAvatarReq) error
 }
 
 func NewMyService(
@@ -67,4 +68,8 @@ func (s *myService) GetMyProfile(ctx context.Context, userId string) (*domain.Us
 
 func (s *myService) UpdateMyProfile(ctx context.Context, user *domain.UpdateMyProfileReq) error {
 	return s.myRepo.UpdateMyProfile(ctx, user)
+}
+
+func (s *myService) UpdateMyAvatar(ctx context.Context, user *domain.UpdateMyAvatarReq) error {
+	return s.myRepo.UpdateMyAvatar(ctx, user)
 }

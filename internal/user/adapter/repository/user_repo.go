@@ -58,7 +58,7 @@ func (r *UserRepo) GetRoommateById(ctx context.Context, userId string) (*domain.
 func (r *UserRepo) GetUserPosts(ctx context.Context, userId string) ([]hostel_domain.Hostel, int64, error) {
 	hostels := []hostel_domain.Hostel{}
 	res := r.DB.Table("hostels").
-		Where("created_by = ?", userId).
+		Where("created_by = ?", userId).Order("created_at desc").
 		Find(&hostels)
 	return hostels, res.RowsAffected, res.Error
 }

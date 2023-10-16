@@ -46,7 +46,7 @@ CREATE TABLE "hostels" (
   "image_url" varchar[] NOT NULL,
   "view" int DEFAULT 0,
   "created_at" timestamptz DEFAULT (current_timestamp),
-  "ended_at" timestamptz DEFAULT (current_timestamp + interval '1' week),
+  "ended_at" timestamptz DEFAULT (current_timestamp + interval '1' month),
   "created_by" varchar(100) NOT NULL,
   "updated_at" timestamptz,
   "updated_by" varchar(100) default '',

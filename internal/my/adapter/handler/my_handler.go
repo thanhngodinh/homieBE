@@ -28,8 +28,7 @@ func (h *HttpMyHandler) GetMyPostLiked(w http.ResponseWriter, r *http.Request) {
 	userId := r.Context().Value("userId").(string)
 	res, err := h.service.GetMyPostLiked(r.Context(), userId)
 	if err != nil {
-		h.logError(r.Context(), err.Error())
-		http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
+		util.JsonInternalError(w, err)
 	} else {
 		util.Json(w, http.StatusOK, util.Response{
 			Data:  res.Data,
@@ -58,15 +57,10 @@ func (h *HttpMyHandler) GetMyProfile(w http.ResponseWriter, r *http.Request) {
 	userId := r.Context().Value("userId").(string)
 	res, err := h.service.GetMyProfile(r.Context(), userId)
 	if err != nil {
-		h.logError(r.Context(), err.Error())
-		util.Json(w, http.StatusInternalServerError, util.Response{
-			Status: err.Error(),
-		})
-	} else {
-		util.Json(w, http.StatusOK, util.Response{
-			Data: res,
-		})
+		util.JsonInternalError(w, err)
+		return
 	}
+	util.JsonOK(w, res)
 }
 
 func (h *HttpMyHandler) UpdateMyProfile(w http.ResponseWriter, r *http.Request) {
@@ -81,8 +75,7 @@ func (h *HttpMyHandler) UpdateMyProfile(w http.ResponseWriter, r *http.Request) 
 	}
 	errors, err := h.validate(r.Context(), &user)
 	if err != nil {
-		h.logError(r.Context(), err.Error())
-		http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
+		util.JsonInternalError(w, err)
 		return
 	}
 	if len(errors) > 0 {
@@ -90,23 +83,41 @@ func (h *HttpMyHandler) UpdateMyProfile(w http.ResponseWriter, r *http.Request) 
 		util.Json(w, http.StatusUnprocessableEntity, errors)
 		return
 	}
+	user.Id = r.Context().Value("userId").(string)
 	err = h.service.UpdateMyProfile(r.Context(), &user)
 	if err != nil {
-		h.logError(r.Context(), err.Error())
-		if util.IsDefinedErrorType(err) {
-			util.Json(w, http.StatusBadRequest, util.Response{
-				Status: err.Error(),
-			})
-		} else {
-			util.Json(w, http.StatusInternalServerError, util.Response{
-				Status: err.Error(),
-			})
-		}
-	} else {
-		util.Json(w, http.StatusOK, util.Response{
-			Data: user,
-		})
+		util.JsonInternalError(w, err)
+		return
 	}
+	util.JsonOK(w)
+}
+
+func (h *HttpMyHandler) UpdateMyAvatar(w http.ResponseWriter, r *http.Request) {
+	var req domain.UpdateMyAvatarReq
+	err := json.NewDecoder(r.Body).Decode(&req)
+	defer r.Body.Close()
+	if err != nil {
+		util.JsonBadRequest(w, err)
+		return
+	}
+	errors, err := h.validate(r.Context(), &req)
+	if err != nil {
+		util.JsonInternalError(w, err)
+		return
+	}
+	if len(errors) > 0 {
+		h.logError(r.Context(), err.Error())
+		util.Json(w, http.StatusUnprocessableEntity, errors)
+		return
+	}
+	req.Id = r.Context().Value("userId").(string)
+	err = h.service.UpdateMyAvatar(r.Context(), &req)
+	if err != nil {
+		util.JsonInternalError(w, err)
+		return
+	}
+	util.JsonOK(w)
+
 }
 
 func (h *HttpMyHandler) LikePost(w http.ResponseWriter, r *http.Request) {

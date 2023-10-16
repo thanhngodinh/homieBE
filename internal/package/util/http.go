@@ -15,6 +15,7 @@ type Response struct {
 }
 
 const Success = "Success"
+const BadRequest = "Bad Request"
 const InternalServerError = "Internal Server Error"
 
 func Json(w http.ResponseWriter, code int, res interface{}) error {
@@ -30,7 +31,12 @@ func JsonOK(w http.ResponseWriter, data ...interface{}) error {
 	return Json(w, http.StatusOK, Response{Status: Success})
 }
 
+func JsonBadRequest(w http.ResponseWriter, err error) error {
+	logrus.Error(err)
+	return Json(w, http.StatusBadRequest, Response{Status: err.Error(), Message: BadRequest})
+}
+
 func JsonInternalError(w http.ResponseWriter, err error) error {
 	logrus.Error(err)
-	return Json(w, http.StatusInternalServerError, Response{Message: InternalServerError})
+	return Json(w, http.StatusInternalServerError, Response{Status: err.Error(), Message: InternalServerError})
 }

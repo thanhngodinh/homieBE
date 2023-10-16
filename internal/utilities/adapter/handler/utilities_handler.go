@@ -33,8 +33,7 @@ type HttpUtilitiesHandler struct {
 func (h *HttpUtilitiesHandler) GetAllUtilities(w http.ResponseWriter, r *http.Request) {
 	utilities, err := h.service.GetAllUtilities(r.Context())
 	if err != nil {
-		h.logError(r.Context(), err.Error())
-		http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
+		util.JsonInternalError(w, err)
 	} else {
 		util.Json(w, http.StatusOK, utilities)
 	}

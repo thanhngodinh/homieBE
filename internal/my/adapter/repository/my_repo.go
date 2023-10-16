@@ -17,6 +17,12 @@ type MyAdapter struct {
 	DB *gorm.DB
 }
 
+func (r *MyAdapter) GetMyProfile(ctx context.Context, userId string) (*domain.User, error) {
+	res := &domain.User{}
+	r.DB.Table("users").Where("id = ?", userId).First(res)
+	return res, nil
+}
+
 func (r *MyAdapter) GetMyPostLiked(ctx context.Context, userId string) ([]hostel_domain.Hostel, int64, error) {
 	hostels := []hostel_domain.Hostel{}
 	res := r.DB.Table("hostels").
@@ -29,7 +35,7 @@ func (r *MyAdapter) GetMyPostLiked(ctx context.Context, userId string) ([]hostel
 func (r *MyAdapter) GetMyPosts(ctx context.Context, userId string) ([]hostel_domain.Hostel, int64, error) {
 	hostels := []hostel_domain.Hostel{}
 	res := r.DB.Table("hostels").
-		Where("created_by = ?", userId).
+		Where("created_by = ?", userId).Order("created_at desc").
 		Find(&hostels)
 	return hostels, res.RowsAffected, res.Error
 }
@@ -47,8 +53,7 @@ func (r *MyAdapter) UpdateMyProfile(ctx context.Context, user *domain.UpdateMyPr
 	return res.Error
 }
 
-func (r *MyAdapter) GetMyProfile(ctx context.Context, userId string) (*domain.User, error) {
-	res := &domain.User{}
-	r.DB.Table("users").Where("id = ?", userId).First(res)
-	return res, nil
+func (r *MyAdapter) UpdateMyAvatar(ctx context.Context, user *domain.UpdateMyAvatarReq) error {
+	res := r.DB.Table("users").Updates(user)
+	return res.Error
 }

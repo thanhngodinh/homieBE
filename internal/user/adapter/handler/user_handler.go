@@ -114,8 +114,7 @@ func (h *HttpUserHandler) SearchRoommates(w http.ResponseWriter, r *http.Request
 	}
 	res, total, err := h.service.SearchRoommates(r.Context(), filter)
 	if err != nil {
-		h.logError(r.Context(), err.Error())
-		http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
+		util.JsonInternalError(w, err)
 	} else {
 		util.Json(w, http.StatusOK, util.Response{
 			Data:  res,

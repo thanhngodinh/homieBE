@@ -107,6 +107,7 @@ func (s *hostelService) GetHostelById(ctx context.Context, code string, userId s
 func (s *hostelService) CreateHostel(ctx context.Context, hostel *domain.Hostel) (int64, error) {
 	hostel.Id = uuid.New().String()
 	hostel.CreatedAt = time.Now()
+	hostel.EndedAt = time.Now().AddDate(0, 1, 0)
 	hostel.Status = domain.HostelActive
 	return s.repository.CreateHostel(ctx, hostel)
 }

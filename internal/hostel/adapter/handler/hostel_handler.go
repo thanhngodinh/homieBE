@@ -71,8 +71,7 @@ func (h *HttpHostelHandler) GetHostels(w http.ResponseWriter, r *http.Request) {
 
 	hostels, total, err := h.service.GetHostels(r.Context(), hostel, userId)
 	if err != nil {
-		h.logError(r.Context(), err.Error())
-		http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
+		util.JsonInternalError(w, err)
 	} else {
 		util.Json(w, http.StatusOK, util.Response{
 			Data:  hostels,
@@ -96,8 +95,7 @@ func (h *HttpHostelHandler) SearchHostels(w http.ResponseWriter, r *http.Request
 	userId := r.Context().Value("userId").(string)
 	hostels, total, err := h.service.GetHostels(r.Context(), hostel, userId)
 	if err != nil {
-		h.logError(r.Context(), err.Error())
-		http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
+		util.JsonInternalError(w, err)
 	} else {
 		util.Json(w, http.StatusOK, util.Response{
 			Data:  hostels,
@@ -110,8 +108,7 @@ func (h *HttpHostelHandler) GetSuggestHostels(w http.ResponseWriter, r *http.Req
 	userId := r.Context().Value("userId").(string)
 	hostels, total, err := h.service.GetSuggestHostels(r.Context(), userId)
 	if err != nil {
-		h.logError(r.Context(), err.Error())
-		http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
+		util.JsonInternalError(w, err)
 	} else {
 		util.Json(w, http.StatusOK, util.Response{
 			Data:  hostels,
@@ -131,8 +128,7 @@ func (h *HttpHostelHandler) GetHostelById(w http.ResponseWriter, r *http.Request
 	userId := r.Context().Value("userId").(string)
 	hostel, err := h.service.GetHostelById(r.Context(), code, userId)
 	if err != nil {
-		h.logError(r.Context(), err.Error())
-		http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
+		util.JsonInternalError(w, err)
 	} else if hostel == nil {
 		util.Json(w, http.StatusNotFound, util.Response{})
 	} else {

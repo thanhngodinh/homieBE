@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"hostel-service/internal/hostel/domain"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -73,6 +74,9 @@ func (r *HostelAdapter) GetHostels(ctx context.Context, filter *domain.HostelFil
 	if filter.CreatedBy != nil && len(*filter.CreatedBy) > 0 {
 		tx = tx.Where("created_by = ?", filter.CreatedBy)
 	}
+	if filter.IsIncludeEnded == false {
+		tx = tx.Where("ended_at > ?", time.Now())
+	}
 	if len(filter.Utilities) > 0 {
 		tx = tx.Where("? <@ (select array_agg(hostels_utilities.utilities_id) from hostels_utilities where hostels_utilities.hostel_id = hostels.id)", filter.Utilities)
 	}
@@ -86,20 +90,38 @@ func (r *HostelAdapter) GetHostelById(ctx context.Context, id string) (*domain.H
 	var hostel domain.Hostel
 
 	r.DB.Table("hostels").
-		Select("hostels.*, array_remove(array_agg(hostels_utilities.utilities_id), NULL) as utilities").
-		Joins("left join hostels_utilities on hostels_utilities.hostel_id = hostels.id").Group("hostels.id").
-		Where("id = ?", id).First(&hostel)
+		Select(`hostels.*,
+		users.display_name as author, users.avatar_url as author_avatar,
+		array_remove(array_agg(hostels_utilities.utilities_id), NULL) as utilities`).
+		Joins("join users on users.id = hostels.created_by").
+		Joins("join hostels_utilities on hostels_utilities.hostel_id = hostels.id").
+		Group("hostels.id").Group("users.id").
+		Where("hostels.id = ?", id).First(&hostel)
 	r.DB.Table("hostels").Where("id = ?", id).Updates(map[string]interface{}{"view": hostel.View + 1})
 	return &hostel, nil
 }
 
 func (r *HostelAdapter) CreateHostel(ctx context.Context, hostel *domain.Hostel) (int64, error) {
 	res := r.DB.Table("hostels").Create(hostel)
+	if hostel.Utilities != nil {
+		hu := []domain.HostelUtilities{}
+		for _, u := range hostel.Utilities {
+			hu = append(hu, domain.HostelUtilities{HostelId: hostel.Id, UtilitiesId: u})
+		}
+		r.DB.Table("hostels_utilities").Create(hu)
+	}
 	return res.RowsAffected, res.Error
 }
 
 func (r *HostelAdapter) UpdateHostel(ctx context.Context, hostel *domain.Hostel) (int64, error) {
 	res := r.DB.Table("hostels").Model(&hostel).Updates(hostel)
+	r.DB.Table("hostels_utilities").Where("hostel_id = ?", hostel.Id).Delete(domain.HostelUtilities{})
+	if hostel.Utilities != nil {
+		hu := []domain.HostelUtilities{}
+		for _, u := range hostel.Utilities {
+			hu = append(hu, domain.HostelUtilities{HostelId: hostel.Id, UtilitiesId: u})
+		}
+	}
 	return res.RowsAffected, res.Error
 }
 

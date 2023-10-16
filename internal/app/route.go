@@ -22,6 +22,7 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 	userRouter.HandleFunc("/password", app.User.UpdatePassword).Methods(PUT)
 	userRouter.HandleFunc("/profile", app.My.GetMyProfile).Methods(GET)
 	userRouter.HandleFunc("/profile", app.My.UpdateMyProfile).Methods(PUT)
+	userRouter.HandleFunc("/avatar", app.My.UpdateMyAvatar).Methods(PUT)
 	userRouter.Use(internalMid.Authenticate)
 
 	hostelRouter := r.PathPrefix("/hostels").Subrouter()
