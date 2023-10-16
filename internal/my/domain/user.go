@@ -32,17 +32,14 @@ type UpdateMyProfileReq struct {
 	Id            string         `json:"-" gorm:"column:id;primary_key"`
 	Phone         string         `json:"phone,omitempty" gorm:"column:phone"`
 	Email         string         `json:"email,omitempty" gorm:"column:email"`
-	Birthdate     *time.Time     `json:"birth_date,omitempty" gorm:"column:birth_date"`
+	DateOfBirth   *time.Time     `json:"dateOfBirth,omitempty" gorm:"column:date_of_birth"`
 	Gender        string         `json:"gender,omitempty" gorm:"column:gender"`
-	FirstName     string         `json:"firstName,omitempty" gorm:"column:first_name"`
-	LastName      string         `json:"lastName,omitempty" gorm:"column:last_name"`
-	IsFindRoomate string         `json:"isFindRoomate,omitempty" gorm:"column:is_find_roomate"`
+	Name          string         `json:"name,omitempty" gorm:"column:display_name"`
+	IsFindRoomate bool           `json:"isFindRoomate,omitempty" gorm:"column:is_find_roommate"`
 	Province      string         `json:"province,omitempty" gorm:"column:province_profile"`
 	District      pq.StringArray `json:"district,omitempty" gorm:"column:district_profile;type:text[]"`
 	CostFrom      int            `json:"costFrom,omitempty" gorm:"column:cost_from"`
 	CostTo        int            `json:"costTo,omitempty" gorm:"column:cost_to"`
-	UpdatedAt     *time.Time     `json:"updatedAt,omitempty" gorm:"colum:updated_at"`
-	UpdatedBy     string         `json:"updatedBy,omitempty" gorm:"colum:updated_by"`
 }
 
 type UpdateMyAvatarReq struct {

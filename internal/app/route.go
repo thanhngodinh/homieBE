@@ -6,7 +6,6 @@ import (
 	"github.com/gorilla/mux"
 
 	internalMid "hostel-service/internal/middleware"
-	// httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func Route(r *mux.Router, ctx context.Context, conf Config) error {
@@ -65,5 +64,6 @@ const (
 	GET    = "GET"
 	POST   = "POST"
 	PUT    = "PUT"
+	PATCH  = "PATCH"
 	DELETE = "DELETE"
 )
