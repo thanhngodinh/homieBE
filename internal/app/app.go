@@ -10,10 +10,10 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
-	hostelHandler "hostel-service/internal/hostel/adapter/handler"
-	hostelRepository "hostel-service/internal/hostel/adapter/repository"
-	hostelPort "hostel-service/internal/hostel/port"
-	hostelService "hostel-service/internal/hostel/service"
+	hostelHandler "hostel-service/internal/post/adapter/handler"
+	hostelRepository "hostel-service/internal/post/adapter/repository"
+	hostelPort "hostel-service/internal/post/port"
+	hostelService "hostel-service/internal/post/service"
 
 	userHandler "hostel-service/internal/user/adapter/handler"
 	userRepository "hostel-service/internal/user/adapter/repository"
@@ -37,7 +37,7 @@ import (
 )
 
 type ApplicationContext struct {
-	Hostel    hostelPort.HostelHandler
+	Post      hostelPort.PostHandler
 	Utilities utilitiesPort.UtilitiesHandler
 	User      userPort.UserHandler
 	My        myPort.MyHandler
@@ -57,13 +57,13 @@ func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
 	}
 
 	// Repo
-	hostelRepository := hostelRepository.NewHostelAdapter(gormDb)
+	hostelRepository := hostelRepository.NewPostAdapter(gormDb)
 	userRepository := userRepository.NewUserRepo(gormDb)
 	myRepository := myRepository.NewMyAdapter(gormDb)
 	utilitiesRepository := utilitiesRepository.NewUtilitiesAdapter(gormDb)
 
-	hostelService := hostelService.NewHostelService(hostelRepository, userRepository)
-	hostelHandler := hostelHandler.NewHostelHandler(hostelService, validator.Validate, logError)
+	hostelService := hostelService.NewPostService(hostelRepository, userRepository)
+	hostelHandler := hostelHandler.NewPostHandler(hostelService, validator.Validate, logError)
 
 	utilitiesService := utilitiesService.NewUtilitiesService(utilitiesRepository)
 	utilitiesHandler := utilitiesHandler.NewUtilitiesHandler(utilitiesService, validator.Validate, logError)
@@ -78,7 +78,7 @@ func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
 	chatHandler := chatHandler.NewChatHandler(chatService)
 
 	return &ApplicationContext{
-		Hostel:    hostelHandler,
+		Post:      hostelHandler,
 		Utilities: utilitiesHandler,
 		User:      userHandler,
 		My:        myHandler,

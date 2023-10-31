@@ -2,15 +2,15 @@ package service
 
 import (
 	"context"
-	hostel_domain "hostel-service/internal/hostel/domain"
-	hostel_port "hostel-service/internal/hostel/port"
 	"hostel-service/internal/my/domain"
 	"hostel-service/internal/my/port"
+	post_domain "hostel-service/internal/post/domain"
+	post_port "hostel-service/internal/post/port"
 )
 
 type MyService interface {
-	GetMyPostLiked(ctx context.Context, userId string) (*hostel_domain.GetHostelsResponse, error)
-	GetMyPosts(ctx context.Context, userId string) (*hostel_domain.GetHostelsResponse, error)
+	GetMyPostLiked(ctx context.Context, userId string) ([]post_domain.Post, int64, error)
+	GetMyPosts(ctx context.Context, userId string) ([]post_domain.Post, int64, error)
 	LikePost(ctx context.Context, userId string, postId string) (int64, error)
 	GetMyProfile(ctx context.Context, userId string) (*domain.User, error)
 	UpdateMyProfile(ctx context.Context, user *domain.UpdateMyProfileReq) error
@@ -19,7 +19,7 @@ type MyService interface {
 
 func NewMyService(
 	myRepo port.MyRepository,
-	hostelRepo hostel_port.HostelRepository,
+	hostelRepo post_port.PostRepository,
 ) MyService {
 	return &myService{
 		myRepo:     myRepo,
@@ -29,29 +29,15 @@ func NewMyService(
 
 type myService struct {
 	myRepo     port.MyRepository
-	hostelRepo hostel_port.HostelRepository
+	hostelRepo post_port.PostRepository
 }
 
-func (s *myService) GetMyPostLiked(ctx context.Context, userId string) (*hostel_domain.GetHostelsResponse, error) {
-	hostels, total, err := s.myRepo.GetMyPostLiked(ctx, userId)
-	if err != nil {
-		return nil, err
-	}
-	return &hostel_domain.GetHostelsResponse{
-		Data:  hostels,
-		Total: total,
-	}, nil
+func (s *myService) GetMyPostLiked(ctx context.Context, userId string) ([]post_domain.Post, int64, error) {
+	return s.myRepo.GetMyPostLiked(ctx, userId)
 }
 
-func (s *myService) GetMyPosts(ctx context.Context, userId string) (*hostel_domain.GetHostelsResponse, error) {
-	hostels, total, err := s.myRepo.GetMyPosts(ctx, userId)
-	if err != nil {
-		return nil, err
-	}
-	return &hostel_domain.GetHostelsResponse{
-		Data:  hostels,
-		Total: total,
-	}, nil
+func (s *myService) GetMyPosts(ctx context.Context, userId string) ([]post_domain.Post, int64, error) {
+	return s.myRepo.GetMyPosts(ctx, userId)
 }
 
 func (s *myService) LikePost(ctx context.Context, userId string, postId string) (int64, error) {

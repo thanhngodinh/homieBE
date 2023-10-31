@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
-	hostel_domain "hostel-service/internal/hostel/domain"
+	post_domain "hostel-service/internal/post/domain"
 	"hostel-service/internal/user/domain"
 
 	"gorm.io/gorm"
@@ -55,12 +55,12 @@ func (r *UserRepo) GetRoommateById(ctx context.Context, userId string) (*domain.
 	return roommate, res.Error
 }
 
-func (r *UserRepo) GetUserPosts(ctx context.Context, userId string) ([]hostel_domain.Hostel, int64, error) {
-	hostels := []hostel_domain.Hostel{}
-	res := r.DB.Table("hostels").
+func (r *UserRepo) GetUserPosts(ctx context.Context, userId string) ([]post_domain.Post, int64, error) {
+	posts := []post_domain.Post{}
+	res := r.DB.Table("posts").
 		Where("created_by = ?", userId).Order("created_at desc").
-		Find(&hostels)
-	return hostels, res.RowsAffected, res.Error
+		Find(&posts)
+	return posts, res.RowsAffected, res.Error
 }
 
 func (r *UserRepo) UpdateUserSuggest(ctx context.Context, us *domain.UpdateUserSuggest) error {

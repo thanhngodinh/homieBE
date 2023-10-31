@@ -2,9 +2,9 @@ package repository
 
 import (
 	"context"
-	hostel_domain "hostel-service/internal/hostel/domain"
 	"hostel-service/internal/my/domain"
 	"hostel-service/internal/package/util"
+	post_domain "hostel-service/internal/post/domain"
 
 	"gorm.io/gorm"
 )
@@ -23,21 +23,21 @@ func (r *MyAdapter) GetMyProfile(ctx context.Context, userId string) (*domain.Us
 	return res, nil
 }
 
-func (r *MyAdapter) GetMyPostLiked(ctx context.Context, userId string) ([]hostel_domain.Hostel, int64, error) {
-	hostels := []hostel_domain.Hostel{}
-	res := r.DB.Table("hostels").
-		Select(`hostels.*, true as "is_liked"`).
-		Joins("left join user_like_posts on user_like_posts.post_id = hostels.id").
-		Where("user_like_posts.user_id = ?", userId).Scan(&hostels)
-	return hostels, res.RowsAffected, res.Error
+func (r *MyAdapter) GetMyPostLiked(ctx context.Context, userId string) ([]post_domain.Post, int64, error) {
+	posts := []post_domain.Post{}
+	res := r.DB.Table("posts").
+		Select(`posts.*, true as "is_liked"`).
+		Joins("left join user_like_posts on user_like_posts.post_id = posts.id").
+		Where("user_like_posts.user_id = ?", userId).Scan(&posts)
+	return posts, res.RowsAffected, res.Error
 }
 
-func (r *MyAdapter) GetMyPosts(ctx context.Context, userId string) ([]hostel_domain.Hostel, int64, error) {
-	hostels := []hostel_domain.Hostel{}
-	res := r.DB.Table("hostels").
+func (r *MyAdapter) GetMyPosts(ctx context.Context, userId string) ([]post_domain.Post, int64, error) {
+	posts := []post_domain.Post{}
+	res := r.DB.Table("posts").
 		Where("created_by = ?", userId).Order("created_at desc").
-		Find(&hostels)
-	return hostels, res.RowsAffected, res.Error
+		Find(&posts)
+	return posts, res.RowsAffected, res.Error
 }
 
 func (r *MyAdapter) LikePost(ctx context.Context, up domain.LikePost) (int64, error) {

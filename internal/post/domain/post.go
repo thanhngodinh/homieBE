@@ -7,22 +7,22 @@ import (
 	"gorm.io/gorm"
 )
 
-type HostelStatus string
+type PostStatus string
 
 const (
-	HostelActive   HostelStatus = "A"
-	HostelWaiting  HostelStatus = "W"
-	HostelInActive HostelStatus = "I"
+	PostActive   PostStatus = "A"
+	PostWaiting  PostStatus = "W"
+	PostInActive PostStatus = "I"
 )
 
-type Hostel struct {
+type Post struct {
 	Id               string         `json:"id" gorm:"column:id;primary_key"`
 	Name             string         `json:"name" gorm:"column:name"`
 	Province         string         `json:"province,omitempty" gorm:"column:province"`
 	District         string         `json:"district,omitempty" gorm:"column:district"`
 	Ward             string         `json:"ward,omitempty" gorm:"column:ward"`
 	Street           string         `json:"street,omitempty" gorm:"column:street"`
-	Status           HostelStatus   `json:"status,omitempty" gorm:"column:status;type:text"`
+	Status           PostStatus     `json:"status,omitempty" gorm:"column:status;type:text"`
 	Cost             int            `json:"cost,omitempty" gorm:"column:cost"`
 	Deposit          int            `json:"deposit,omitempty" gorm:"column:deposit"`
 	ElectricityPrice int            `json:"electricityPrice,omitempty" gorm:"column:electricity_price"`
@@ -47,12 +47,7 @@ type Hostel struct {
 	DeletedAt        gorm.DeletedAt `json:"-"`
 }
 
-type GetHostelsResponse struct {
-	Data  []Hostel `json:"data"`
-	Total int64    `json:"total"`
-}
-
-type HostelUtilities struct {
-	HostelId    string `gorm:"column:hostel_id"`
-	UtilitiesId string `gorm:"column:utilities_id"`
+type PostUtilities struct {
+	PostId      string `gorm:"column:post_id"`
+	UtilitiesId string `gorm:"column:utility_id"`
 }

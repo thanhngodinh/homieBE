@@ -3,14 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
-	_ "hostel-service/docs"
 	"net/http"
 
 	"github.com/core-go/config"
 	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
 
-	// "github.com/core-go/core/cors"
 	"github.com/core-go/log"
 	"github.com/gorilla/mux"
 
@@ -39,7 +37,6 @@ func main() {
 		// AllowCredentials: true,
 	})
 	handler := c.Handler(r)
-
 
 	logrus.Infof("Server start at port: %v", *conf.Server.Port)
 	http.ListenAndServe(fmt.Sprintf(":%v", *conf.Server.Port), handler)

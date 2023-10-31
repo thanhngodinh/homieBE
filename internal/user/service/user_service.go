@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"errors"
-	hostel_port "hostel-service/internal/hostel/port"
+	post_port "hostel-service/internal/post/port"
 	"hostel-service/internal/user/domain"
 	"hostel-service/internal/user/port"
 
@@ -22,7 +22,7 @@ type UserService interface {
 
 func NewUserService(
 	userRepo port.UserRepository,
-	hostelRepo hostel_port.HostelRepository,
+	hostelRepo post_port.PostRepository,
 ) UserService {
 	return &userService{
 		userRepo:   userRepo,
@@ -32,7 +32,7 @@ func NewUserService(
 
 type userService struct {
 	userRepo   port.UserRepository
-	hostelRepo hostel_port.HostelRepository
+	hostelRepo post_port.PostRepository
 }
 
 func (s *userService) SearchRoommates(ctx context.Context, filter *domain.RoommateFilter) ([]domain.Roommate, int64, error) {

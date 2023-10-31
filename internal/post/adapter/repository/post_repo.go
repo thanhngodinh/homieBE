@@ -3,32 +3,32 @@ package repository
 import (
 	"context"
 	"fmt"
-	"hostel-service/internal/hostel/domain"
+	"hostel-service/internal/post/domain"
 	"time"
 
 	"gorm.io/gorm"
 )
 
-func NewHostelAdapter(db *gorm.DB) *HostelAdapter {
-	return &HostelAdapter{DB: db}
+func NewPostAdapter(db *gorm.DB) *PostAdapter {
+	return &PostAdapter{DB: db}
 }
 
-type HostelAdapter struct {
+type PostAdapter struct {
 	DB *gorm.DB
 }
 
-func (r *HostelAdapter) GetHostels(ctx context.Context, filter *domain.HostelFilter, userId string) ([]domain.Hostel, int64, error) {
+func (r *PostAdapter) GetPosts(ctx context.Context, filter *domain.PostFilter, userId string) ([]domain.Post, int64, error) {
 	var (
 		tx     *gorm.DB
-		hotels []domain.Hostel
+		hotels []domain.Post
 	)
 
-	tx = r.DB.Table("hostels").
+	tx = r.DB.Table("posts").
 		Select(fmt.Sprintf(`
-	(select true from user_like_posts where user_like_posts.post_id = hostels.id and user_like_posts.user_id = '%v') as "is_liked",
-	array_remove(array_agg(hostels_utilities.utilities_id), NULL) as utilities,
-	hostels.*`, userId)).
-		Joins("left join hostels_utilities on hostels_utilities.hostel_id = hostels.id").Group("hostels.id")
+	(select true from user_like_posts where user_like_posts.post_id = posts.id and user_like_posts.user_id = '%v') as "is_liked",
+	array_remove(array_agg(post_utilities.utility_id), NULL) as utilities,
+	posts.*`, userId)).
+		Joins("left join post_utilities on post_utilities.post_id = posts.id").Group("posts.id")
 	if filter.Name != nil && len(*filter.Name) > 0 {
 		tx = tx.Where("name ilike ?", fmt.Sprintf("%%%v%%", *filter.Name))
 	}
@@ -78,7 +78,7 @@ func (r *HostelAdapter) GetHostels(ctx context.Context, filter *domain.HostelFil
 		tx = tx.Where("ended_at > ?", time.Now())
 	}
 	if len(filter.Utilities) > 0 {
-		tx = tx.Where("? <@ (select array_agg(hostels_utilities.utilities_id) from hostels_utilities where hostels_utilities.hostel_id = hostels.id)", filter.Utilities)
+		tx = tx.Where("? <@ (select array_agg(post_utilities.utility_id) from post_utilities where post_utilities.post_id = posts.id)", filter.Utilities)
 	}
 	res1 := tx.Scan(&hotels)
 	total := res1.RowsAffected
@@ -86,46 +86,46 @@ func (r *HostelAdapter) GetHostels(ctx context.Context, filter *domain.HostelFil
 	return hotels, total, res2.Error
 }
 
-func (r *HostelAdapter) GetHostelById(ctx context.Context, id string) (*domain.Hostel, error) {
-	var hostel domain.Hostel
+func (r *PostAdapter) GetPostById(ctx context.Context, id string) (*domain.Post, error) {
+	var hostel domain.Post
 
-	r.DB.Table("hostels").
-		Select(`hostels.*,
+	r.DB.Table("posts").
+		Select(`posts.*,
 		users.display_name as author, users.avatar_url as author_avatar,
-		array_remove(array_agg(hostels_utilities.utilities_id), NULL) as utilities`).
-		Joins("join users on users.id = hostels.created_by").
-		Joins("join hostels_utilities on hostels_utilities.hostel_id = hostels.id").
-		Group("hostels.id").Group("users.id").
-		Where("hostels.id = ?", id).First(&hostel)
-	r.DB.Table("hostels").Where("id = ?", id).Updates(map[string]interface{}{"view": hostel.View + 1})
+		array_remove(array_agg(post_utilities.utility_id), NULL) as utilities`).
+		Joins("join users on users.id = posts.created_by").
+		Joins("join post_utilities on post_utilities.post_id = posts.id").
+		Group("posts.id").Group("users.id").
+		Where("posts.id = ?", id).First(&hostel)
+	r.DB.Table("posts").Where("id = ?", id).Updates(map[string]interface{}{"view": hostel.View + 1})
 	return &hostel, nil
 }
 
-func (r *HostelAdapter) CreateHostel(ctx context.Context, hostel *domain.Hostel) (int64, error) {
-	res := r.DB.Table("hostels").Create(hostel)
+func (r *PostAdapter) CreatePost(ctx context.Context, hostel *domain.Post) (int64, error) {
+	res := r.DB.Table("posts").Create(hostel)
 	if hostel.Utilities != nil {
-		hu := []domain.HostelUtilities{}
+		hu := []domain.PostUtilities{}
 		for _, u := range hostel.Utilities {
-			hu = append(hu, domain.HostelUtilities{HostelId: hostel.Id, UtilitiesId: u})
+			hu = append(hu, domain.PostUtilities{PostId: hostel.Id, UtilitiesId: u})
 		}
-		r.DB.Table("hostels_utilities").Create(hu)
+		r.DB.Table("post_utilities").Create(hu)
 	}
 	return res.RowsAffected, res.Error
 }
 
-func (r *HostelAdapter) UpdateHostel(ctx context.Context, hostel *domain.Hostel) (int64, error) {
-	res := r.DB.Table("hostels").Model(&hostel).Updates(hostel)
-	r.DB.Table("hostels_utilities").Where("hostel_id = ?", hostel.Id).Delete(domain.HostelUtilities{})
+func (r *PostAdapter) UpdatePost(ctx context.Context, hostel *domain.Post) (int64, error) {
+	res := r.DB.Table("posts").Model(&hostel).Updates(hostel)
+	r.DB.Table("post_utilities").Where("post_id = ?", hostel.Id).Delete(domain.PostUtilities{})
 	if hostel.Utilities != nil {
-		hu := []domain.HostelUtilities{}
+		hu := []domain.PostUtilities{}
 		for _, u := range hostel.Utilities {
-			hu = append(hu, domain.HostelUtilities{HostelId: hostel.Id, UtilitiesId: u})
+			hu = append(hu, domain.PostUtilities{PostId: hostel.Id, UtilitiesId: u})
 		}
 	}
 	return res.RowsAffected, res.Error
 }
 
-func (r *HostelAdapter) DeleteHostel(ctx context.Context, hostel *domain.Hostel) (int64, error) {
-	res := r.DB.Table("hostels").Delete(hostel)
+func (r *PostAdapter) DeletePost(ctx context.Context, hostel *domain.Post) (int64, error) {
+	res := r.DB.Table("posts").Delete(hostel)
 	return res.RowsAffected, res.Error
 }

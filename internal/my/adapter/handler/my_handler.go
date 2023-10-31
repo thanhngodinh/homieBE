@@ -26,20 +26,20 @@ type HttpMyHandler struct {
 
 func (h *HttpMyHandler) GetMyPostLiked(w http.ResponseWriter, r *http.Request) {
 	userId := r.Context().Value("userId").(string)
-	res, err := h.service.GetMyPostLiked(r.Context(), userId)
+	res, total, err := h.service.GetMyPostLiked(r.Context(), userId)
 	if err != nil {
 		util.JsonInternalError(w, err)
 	} else {
 		util.Json(w, http.StatusOK, util.Response{
-			Data:  res.Data,
-			Total: res.Total,
+			Data:  res,
+			Total: total,
 		})
 	}
 }
 
 func (h *HttpMyHandler) GetMyPosts(w http.ResponseWriter, r *http.Request) {
 	userId := r.Context().Value("userId").(string)
-	res, err := h.service.GetMyPosts(r.Context(), userId)
+	res, total, err := h.service.GetMyPosts(r.Context(), userId)
 	if err != nil {
 		h.logError(r.Context(), err.Error())
 		util.Json(w, http.StatusInternalServerError, util.Response{
@@ -47,8 +47,8 @@ func (h *HttpMyHandler) GetMyPosts(w http.ResponseWriter, r *http.Request) {
 		})
 	} else {
 		util.Json(w, http.StatusOK, util.Response{
-			Data:  res.Data,
-			Total: res.Total,
+			Data:  res,
+			Total: total,
 		})
 	}
 }

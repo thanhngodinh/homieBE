@@ -6,7 +6,7 @@ import (
 	"github.com/lib/pq"
 )
 
-type HostelFilter struct {
+type PostFilter struct {
 	Name           *string        `json:"name,omitempty"`
 	Province       *string        `json:"province,omitempty"`
 	District       *string        `json:"district,omitempty"`

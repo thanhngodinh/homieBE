@@ -7,8 +7,8 @@ allow:
   credentials: true
   headers: Access-Control-Allow-Headers,Authorization,Origin,Content-Type,Content-Length,Access-Control-Request-Method,Access-Control-Request-Headers
 
-# db: 'host=localhost user=postgres password=postgres dbname=postgres port=5433'
-db: 'host=satao.db.elephantsql.com user=otrodoaa password=xCYt_r2HWQ97cyuuXlJfKoMpijxd6L_M dbname=otrodoaa port=5432'
+db: 'host=localhost user=postgres password=postgres dbname=postgres port=5433'
+# db: 'host=satao.db.elephantsql.com user=otrodoaa password=xCYt_r2HWQ97cyuuXlJfKoMpijxd6L_M dbname=otrodoaa port=5432'
 # db: 'host=satao.db.elephantsql.com user=zmrhacig password=FmnJkzVucF0YvqSoq3be1jCvu8866VQ5 dbname=zmrhacig port=5432'
 
 log:
@@ -26,7 +26,7 @@ middleware:
 
 client:
   endpoint:
-    url: 'http://localhost:8080/hostels'
+    url: 'http://localhost:8080/posts'
     timeout: 1s
   log:
     log: true
