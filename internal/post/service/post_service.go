@@ -4,6 +4,7 @@ import (
 	"context"
 	"hostel-service/internal/post/domain"
 	"hostel-service/internal/post/port"
+	rate_port "hostel-service/internal/rate/port"
 	user_domain "hostel-service/internal/user/domain"
 	user_port "hostel-service/internal/user/port"
 	"time"
@@ -15,25 +16,28 @@ type PostService interface {
 	GetPosts(ctx context.Context, hostel *domain.PostFilter, userId string) ([]domain.Post, int64, error)
 	SearchPosts(ctx context.Context, hostel *domain.PostFilter, userId string) ([]domain.Post, int64, error)
 	GetSuggestPosts(ctx context.Context, userId string) ([]domain.Post, int64, error)
-	GetPostById(ctx context.Context, code string, userId string) (*domain.Post, error)
+	GetPostById(ctx context.Context, postId string, userId string) (*domain.Post, error)
 	CreatePost(ctx context.Context, hostel *domain.Post) (int64, error)
 	UpdatePost(ctx context.Context, hostel *domain.Post) (int64, error)
-	DeletePost(ctx context.Context, code string) (int64, error)
+	DeletePost(ctx context.Context, postId string) (int64, error)
 }
 
 func NewPostService(
 	repository port.PostRepository,
 	userRepo user_port.UserRepository,
+	rateRepo rate_port.RateRepository,
 ) PostService {
 	return &hostelService{
 		repository: repository,
 		userRepo:   userRepo,
+		rateRepo:   rateRepo,
 	}
 }
 
 type hostelService struct {
 	repository port.PostRepository
 	userRepo   user_port.UserRepository
+	rateRepo   rate_port.RateRepository
 }
 
 func (s *hostelService) GetPosts(ctx context.Context, hostel *domain.PostFilter, userId string) ([]domain.Post, int64, error) {
@@ -87,8 +91,12 @@ func (s *hostelService) GetSuggestPosts(ctx context.Context, userId string) ([]d
 	return posts, total, err
 }
 
-func (s *hostelService) GetPostById(ctx context.Context, code string, userId string) (*domain.Post, error) {
-	res, err := s.repository.GetPostById(ctx, code)
+func (s *hostelService) GetPostById(ctx context.Context, postId string, userId string) (*domain.Post, error) {
+	res, err := s.repository.GetPostById(ctx, postId)
+	if err != nil {
+		return nil, err
+	}
+	res.RateInfo, err = s.rateRepo.GetPostRate(ctx, postId)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +126,7 @@ func (s *hostelService) UpdatePost(ctx context.Context, hostel *domain.Post) (in
 	return s.repository.UpdatePost(ctx, hostel)
 }
 
-func (s *hostelService) DeletePost(ctx context.Context, code string) (int64, error) {
-	hostel := &domain.Post{Id: code}
+func (s *hostelService) DeletePost(ctx context.Context, postId string) (int64, error) {
+	hostel := &domain.Post{Id: postId}
 	return s.repository.DeletePost(ctx, hostel)
 }

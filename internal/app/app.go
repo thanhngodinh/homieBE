@@ -30,6 +30,11 @@ import (
 	utilitiesPort "hostel-service/internal/utilities/port"
 	utilitiesService "hostel-service/internal/utilities/service"
 
+	rateHandler "hostel-service/internal/rate/adapter/handler"
+	rateRepository "hostel-service/internal/rate/adapter/repository"
+	ratePort "hostel-service/internal/rate/port"
+	rateService "hostel-service/internal/rate/service"
+
 	chatHandler "hostel-service/internal/chat/adapter/handler"
 	// chatRepository "hostel-service/internal/chat/adapter/repository"
 	chatPort "hostel-service/internal/chat/port"
@@ -41,6 +46,7 @@ type ApplicationContext struct {
 	Utilities utilitiesPort.UtilitiesHandler
 	User      userPort.UserHandler
 	My        myPort.MyHandler
+	Rate      ratePort.RateHandler
 	Chat      chatPort.ChatHandler
 }
 
@@ -61,8 +67,9 @@ func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
 	userRepository := userRepository.NewUserRepo(gormDb)
 	myRepository := myRepository.NewMyAdapter(gormDb)
 	utilitiesRepository := utilitiesRepository.NewUtilitiesAdapter(gormDb)
+	rateRepository := rateRepository.NewRateAdapter(gormDb)
 
-	hostelService := hostelService.NewPostService(hostelRepository, userRepository)
+	hostelService := hostelService.NewPostService(hostelRepository, userRepository, rateRepository)
 	hostelHandler := hostelHandler.NewPostHandler(hostelService, validator.Validate, logError)
 
 	utilitiesService := utilitiesService.NewUtilitiesService(utilitiesRepository)
@@ -74,6 +81,9 @@ func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
 	myService := myService.NewMyService(myRepository, hostelRepository)
 	myHandler := myHandler.NewMyHandler(myService, validator.Validate, logError)
 
+	rateService := rateService.NewRateService(rateRepository)
+	rateHandler := rateHandler.NewRateHandler(rateService, validator.Validate)
+
 	chatService := chatService.NewChatService()
 	chatHandler := chatHandler.NewChatHandler(chatService)
 
@@ -82,6 +92,7 @@ func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
 		Utilities: utilitiesHandler,
 		User:      userHandler,
 		My:        myHandler,
+		Rate:      rateHandler,
 		Chat:      chatHandler,
 	}, nil
 }

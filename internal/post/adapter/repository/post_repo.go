@@ -87,7 +87,7 @@ func (r *PostAdapter) GetPosts(ctx context.Context, filter *domain.PostFilter, u
 }
 
 func (r *PostAdapter) GetPostById(ctx context.Context, id string) (*domain.Post, error) {
-	var hostel domain.Post
+	var post domain.Post
 
 	r.DB.Table("posts").
 		Select(`posts.*,
@@ -96,36 +96,40 @@ func (r *PostAdapter) GetPostById(ctx context.Context, id string) (*domain.Post,
 		Joins("join users on users.id = posts.created_by").
 		Joins("join post_utilities on post_utilities.post_id = posts.id").
 		Group("posts.id").Group("users.id").
-		Where("posts.id = ?", id).First(&hostel)
-	r.DB.Table("posts").Where("id = ?", id).Updates(map[string]interface{}{"view": hostel.View + 1})
-	return &hostel, nil
+		Where("posts.id = ?", id).First(&post)
+	r.DB.Table("posts").Where("id = ?", id).Updates(map[string]interface{}{"view": post.View + 1})
+	return &post, nil
 }
 
-func (r *PostAdapter) CreatePost(ctx context.Context, hostel *domain.Post) (int64, error) {
-	res := r.DB.Table("posts").Create(hostel)
-	if hostel.Utilities != nil {
+func (r *PostAdapter) CreatePost(ctx context.Context, post *domain.Post) (int64, error) {
+	res := r.DB.Table("posts").Create(post)
+	if post.Utilities != nil {
 		hu := []domain.PostUtilities{}
-		for _, u := range hostel.Utilities {
-			hu = append(hu, domain.PostUtilities{PostId: hostel.Id, UtilitiesId: u})
+		for _, u := range post.Utilities {
+			hu = append(hu, domain.PostUtilities{PostId: post.Id, UtilitiesId: u})
 		}
 		r.DB.Table("post_utilities").Create(hu)
 	}
+	rate := &domain.RateInfo{
+		PostId: post.Id,
+	}
+	res = r.DB.Table("post_rate_ifo").Create(rate)
 	return res.RowsAffected, res.Error
 }
 
-func (r *PostAdapter) UpdatePost(ctx context.Context, hostel *domain.Post) (int64, error) {
-	res := r.DB.Table("posts").Model(&hostel).Updates(hostel)
-	r.DB.Table("post_utilities").Where("post_id = ?", hostel.Id).Delete(domain.PostUtilities{})
-	if hostel.Utilities != nil {
+func (r *PostAdapter) UpdatePost(ctx context.Context, post *domain.Post) (int64, error) {
+	res := r.DB.Table("posts").Model(&post).Updates(post)
+	r.DB.Table("post_utilities").Where("post_id = ?", post.Id).Delete(domain.PostUtilities{})
+	if post.Utilities != nil {
 		hu := []domain.PostUtilities{}
-		for _, u := range hostel.Utilities {
-			hu = append(hu, domain.PostUtilities{PostId: hostel.Id, UtilitiesId: u})
+		for _, u := range post.Utilities {
+			hu = append(hu, domain.PostUtilities{PostId: post.Id, UtilitiesId: u})
 		}
 	}
 	return res.RowsAffected, res.Error
 }
 
-func (r *PostAdapter) DeletePost(ctx context.Context, hostel *domain.Post) (int64, error) {
-	res := r.DB.Table("posts").Delete(hostel)
+func (r *PostAdapter) DeletePost(ctx context.Context, post *domain.Post) (int64, error) {
+	res := r.DB.Table("posts").Delete(post)
 	return res.RowsAffected, res.Error
 }

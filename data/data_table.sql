@@ -63,7 +63,7 @@ CREATE TABLE "posts" (
   "deleted_at" timestamptz
 );
 
-CREATE TABLE  post_utilities (
+CREATE TABLE post_utilities (
   "post_id" VARCHAR(40) NOT NULL,
 	"utility_id" VARCHAR(40) NOT NULL,
   primary key (post_id, utility_id)
@@ -81,15 +81,29 @@ CREATE TABLE utilities (
 );
 
 CREATE TABLE "user_like_posts" (
-  user_id varchar(40),
-  post_id varchar(40),
+  "user_id" varchar(40),
+  "post_id" varchar(40),
   primary key (user_id, post_id)
 );
 
-CREATE TABLE "user_rate_posts" (
-  user_id varchar(40),
-  post_id varchar(40),
-  star int,
-  comment text default '',
+CREATE TABLE "rates" (
+  "user_id" varchar(40) NOT NULL,
+  "post_id" varchar(40) NOT NULL,
+  "star" int NOT NULL,
+  "comment" text default '',
+  "created_at" timestamptz default (current_timestamp),
+  "updated_at" timestamptz,
+  "deleted_at" timestamptz,
   primary key (user_id, post_id)
+);
+
+CREATE TABLE "post_rate_info" (
+  "id" bigserial PRIMARY KEY,
+  "post_id" varchar(40) NOT NULL UNIQUE,
+  "total" int NOT NULL default 0,
+  "star1" int NOT NULL default 0,
+  "star2" int NOT NULL default 0,
+  "star3" int NOT NULL default 0,
+  "star4" int NOT NULL default 0,
+  "star5" int NOT NULL default 0
 );

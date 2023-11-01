@@ -10,8 +10,8 @@ var ErrorDuplicateEmail ErrorDefined = errors.New("duplicate email")
 var ErrorWrongTypePageIdx ErrorDefined = errors.New("pageIdx must be an integer")
 var ErrorWrongTypePageSize ErrorDefined = errors.New("pageSize must be an integer")
 
-var ErrorIdNotMatch ErrorDefined = errors.New("pageIdx must be an integer")
-var ErrorCodeNotMatch ErrorDefined = errors.New("pageSize must be an integer")
+var ErrorIdNotMatch ErrorDefined = errors.New("id param not match with body")
+var ErrorCodeNotMatch ErrorDefined = errors.New("code param not match with body")
 
 var ErrorIdEmpty ErrorDefined = errors.New("id is empty")
 var ErrorCodeEmpty ErrorDefined = errors.New("code is empty")

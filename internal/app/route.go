@@ -38,6 +38,11 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 	hostelPublicRouter.HandleFunc("/{code}", app.Post.GetPostById).Methods(GET)
 	hostelPublicRouter.Use(internalMid.PublicAuth)
 
+	rateRouter := r.PathPrefix("/rates").Subrouter()
+	rateRouter.HandleFunc("", app.Rate.CreateRate).Methods(POST)
+	rateRouter.HandleFunc("/{postId}", app.Rate.UpdateRate).Methods(PUT)
+	rateRouter.Use(internalMid.Authenticate)
+
 	roommateRouter := r.PathPrefix("/roommates").Subrouter()
 	roommateRouter.HandleFunc("/search", app.User.SearchRoommates).Methods(POST)
 	roommateRouter.HandleFunc("/{userId}", app.User.GetRoommateById).Methods(GET)
