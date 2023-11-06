@@ -1,13 +1,13 @@
 package handler
 
 import (
-	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 
-	sv "github.com/core-go/core"
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 
 	"hostel-service/internal/package/util"
@@ -17,18 +17,17 @@ import (
 
 func NewPostHandler(
 	service service.PostService,
-	validate func(context.Context, interface{}) ([]sv.ErrorMessage, error),
-	logError func(context.Context, string, ...map[string]interface{})) *HttpPostHandler {
+	validate *validator.Validate,
+) *HttpPostHandler {
 	return &HttpPostHandler{
 		service:  service,
 		validate: validate,
-		logError: logError}
+	}
 }
 
 type HttpPostHandler struct {
 	service  service.PostService
-	validate func(context.Context, interface{}) ([]sv.ErrorMessage, error)
-	logError func(context.Context, string, ...map[string]interface{})
+	validate *validator.Validate
 }
 
 func (h *HttpPostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
@@ -146,27 +145,15 @@ func (h *HttpPostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	errors, er2 := h.validate(r.Context(), &hostel)
-	if er2 != nil {
-		h.logError(r.Context(), er2.Error())
-		http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
-		return
-	}
-	if len(errors) > 0 {
-		h.logError(r.Context(), er2.Error())
-		util.Json(w, http.StatusUnprocessableEntity, errors)
-		return
-	}
 	hostel.CreatedBy = r.Context().Value("userId").(string)
 	_, er3 := h.service.CreatePost(r.Context(), &hostel)
 	if er3 != nil {
-		h.logError(r.Context(), er3.Error())
 		if util.IsDefinedErrorType(er3) {
 			util.Json(w, http.StatusBadRequest, util.Response{
 				Status: er3.Error(),
 			})
 		} else {
-			http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
+			util.JsonInternalError(w, errors.New("internal server error"))
 		}
 	} else {
 		util.Json(w, http.StatusCreated, util.Response{
@@ -200,26 +187,14 @@ func (h *HttpPostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	errors, er2 := h.validate(r.Context(), &hostel)
-	if er2 != nil {
-		h.logError(r.Context(), er2.Error())
-		http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
-		return
-	}
-	if len(errors) > 0 {
-		h.logError(r.Context(), er2.Error())
-		util.Json(w, http.StatusUnprocessableEntity, errors)
-		return
-	}
 	_, er3 := h.service.UpdatePost(r.Context(), &hostel)
 	if er3 != nil {
-		h.logError(r.Context(), er3.Error())
 		if util.IsDefinedErrorType(er3) {
 			util.Json(w, http.StatusBadRequest, util.Response{
 				Status: er3.Error(),
 			})
 		} else {
-			http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
+			util.JsonInternalError(w, errors.New("internal server error"))
 		}
 	} else {
 		util.Json(w, http.StatusOK, util.Response{
@@ -238,7 +213,7 @@ func (h *HttpPostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	}
 	res, err := h.service.DeletePost(r.Context(), code)
 	if err != nil {
-		http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
+		util.JsonInternalError(w, errors.New("internal server error"))
 	} else {
 		if res == 1 {
 			util.Json(w, http.StatusOK, util.Response{

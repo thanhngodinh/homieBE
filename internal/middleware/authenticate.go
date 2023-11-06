@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/core-go/core"
 	"github.com/golang-jwt/jwt"
 
+	"hostel-service/internal/package/util"
 	"hostel-service/internal/user/domain"
 )
 
@@ -16,7 +16,7 @@ func Authenticate(next http.Handler) http.Handler {
 		tokenStr := r.Header.Get("Authorization")
 		splitedTokenStr := strings.Split(tokenStr, " ")
 		if len(splitedTokenStr) != 2 || splitedTokenStr[0] != "Bearer" {
-			core.Respond(w, r, http.StatusUnauthorized, nil, nil, nil, nil)
+			util.Json(w, http.StatusUnauthorized, nil)
 			return
 		}
 		token, err := jwt.ParseWithClaims(
@@ -27,7 +27,7 @@ func Authenticate(next http.Handler) http.Handler {
 			},
 		)
 		if err != nil {
-			core.Respond(w, r, http.StatusUnauthorized, nil, nil, nil, nil)
+			util.Json(w, http.StatusUnauthorized, nil)
 			return
 		}
 		claims := token.Claims.(*jwt.StandardClaims)

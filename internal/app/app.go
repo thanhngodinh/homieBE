@@ -3,8 +3,7 @@ package app
 import (
 	"context"
 
-	v "github.com/core-go/core/v10"
-	"github.com/core-go/log"
+	"github.com/go-playground/validator/v10"
 	_ "github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -56,11 +55,7 @@ func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
 		return nil, err
 	}
 
-	logError := log.LogError
-	validator, err := v.NewValidator()
-	if err != nil {
-		return nil, err
-	}
+	validate := validator.New()
 
 	// Repo
 	hostelRepository := hostelRepository.NewPostAdapter(gormDb)
@@ -70,19 +65,19 @@ func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
 	rateRepository := rateRepository.NewRateAdapter(gormDb)
 
 	hostelService := hostelService.NewPostService(hostelRepository, userRepository, rateRepository)
-	hostelHandler := hostelHandler.NewPostHandler(hostelService, validator.Validate, logError)
+	hostelHandler := hostelHandler.NewPostHandler(hostelService, validate)
 
 	utilitiesService := utilitiesService.NewUtilitiesService(utilitiesRepository)
-	utilitiesHandler := utilitiesHandler.NewUtilitiesHandler(utilitiesService, validator.Validate, logError)
+	utilitiesHandler := utilitiesHandler.NewUtilitiesHandler(utilitiesService, validate)
 
 	userService := userService.NewUserService(userRepository, hostelRepository)
-	userHandler := userHandler.NewUserHandler(userService, validator.Validate, logError)
+	userHandler := userHandler.NewUserHandler(userService, validate)
 
 	myService := myService.NewMyService(myRepository, hostelRepository)
-	myHandler := myHandler.NewMyHandler(myService, validator.Validate, logError)
+	myHandler := myHandler.NewMyHandler(myService, validate)
 
 	rateService := rateService.NewRateService(rateRepository)
-	rateHandler := rateHandler.NewRateHandler(rateService, validator.Validate)
+	rateHandler := rateHandler.NewRateHandler(rateService, validate)
 
 	chatService := chatService.NewChatService()
 	chatHandler := chatHandler.NewChatHandler(chatService)

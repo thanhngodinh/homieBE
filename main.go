@@ -9,7 +9,6 @@ import (
 	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/core-go/log"
 	"github.com/gorilla/mux"
 
 	"hostel-service/internal/app"
@@ -21,9 +20,16 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	r := mux.NewRouter()
+	// viper.SetConfigName("config")
+	// viper.SetConfigType("yaml")
+	// viper.AddConfigPath("./configs")
 
-	log.Initialize(conf.Log)
+	// err := viper.ReadInConfig()
+	// if err != nil {
+	// 	log.Fatalf("Error reading config file, %s", err)
+	// }
+
+	r := mux.NewRouter()
 
 	err = app.Route(r, context.Background(), conf)
 	if err != nil {

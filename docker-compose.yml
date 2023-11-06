@@ -1,14 +1,1 @@
-version: '3'
-
-services:
-  mysql:
-    image: mysql:8
-    container_name: mysql-merchant
-    environment:
-      MYSQL_ROOT_PASSWORD: abcd1234@
-      MYSQL_DATABASE: merchantdb
-    volumes:
-      - ../mysqldata:/var/lib/mysql
-      - ./data:/docker-entrypoint-initdb.d/:ro
-    ports:
-      - 3306:3306
+version: '1'

@@ -1,13 +1,12 @@
 package handler
 
 import (
-	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"time"
 
-	"github.com/core-go/core"
-	sv "github.com/core-go/core"
+	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -18,78 +17,97 @@ import (
 	"hostel-service/internal/user/service"
 )
 
-func NewUserHandler(service service.UserService, validate func(context.Context, interface{}) ([]sv.ErrorMessage, error), logError func(context.Context, string, ...map[string]interface{})) *HttpUserHandler {
-	return &HttpUserHandler{service: service, validate: validate, logError: logError}
+func NewUserHandler(
+	service service.UserService,
+	validate *validator.Validate,
+) *HttpUserHandler {
+	return &HttpUserHandler{
+		service:  service,
+		validate: validate,
+	}
 }
 
 type HttpUserHandler struct {
 	service  service.UserService
-	validate func(context.Context, interface{}) ([]sv.ErrorMessage, error)
-	logError func(context.Context, string, ...map[string]interface{})
+	validate *validator.Validate
 }
 
 func (h *HttpUserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	credentials := &domain.LoginRequest{}
-	er1 := core.Decode(w, r, credentials)
-	if er1 == nil {
-		user, er2 := h.service.GetByUsername(r.Context(), credentials.Username)
-		if er2 != nil {
-			http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
-			return
-		}
-		if user == nil || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(credentials.Password)) != nil {
-			core.Respond(w, r, http.StatusNotFound, nil, nil, nil, nil)
-			return
-		}
-		claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
-			Audience:  user.Id,
-			ExpiresAt: time.Now().Add(time.Hour * 24 * 7).Unix(),
+	err := json.NewDecoder(r.Body).Decode(credentials)
+	defer r.Body.Close()
+	if err != nil {
+		util.Json(w, http.StatusBadRequest, util.Response{
+			Status: err.Error(),
 		})
-		token, er3 := claims.SignedString(domain.SECRET_KEY)
-		if er3 != nil {
-			http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
-			return
-		}
-		res := domain.LoginResponse{
-			Token:   token,
-			Profile: nil,
-		}
-		util.Json(w, http.StatusOK, res)
+		return
 	}
+
+	user, er2 := h.service.GetByUsername(r.Context(), credentials.Username)
+	if er2 != nil {
+		util.JsonInternalError(w, errors.New("internal server error"))
+		return
+	}
+	if user == nil || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(credentials.Password)) != nil {
+		util.Json(w, http.StatusNotFound, util.Response{
+			Status:  "user not match",
+			Message: "Username or password not match",
+		})
+		return
+	}
+	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
+		Audience:  user.Id,
+		ExpiresAt: time.Now().Add(time.Hour * 24 * 7).Unix(),
+	})
+	token, er3 := claims.SignedString(domain.SECRET_KEY)
+	if er3 != nil {
+		util.JsonInternalError(w, errors.New("internal server error"))
+		return
+	}
+	res := domain.LoginResponse{
+		Token:   token,
+		Profile: nil,
+	}
+	util.Json(w, http.StatusOK, res)
+
 }
 
 func (h *HttpUserHandler) Register(w http.ResponseWriter, r *http.Request) {
-	var user domain.User
-	er1 := core.Decode(w, r, &user)
-	if er1 == nil {
-		errors, er2 := h.validate(r.Context(), &user)
-		if errors != nil || er2 != nil {
-			http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
-		}
-		user.Id = uuid.New().String()
-		hashedPassword, er3 := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
-		if er3 != nil {
-			http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
-			return
-		}
-		user.Password = string(hashedPassword)
-		now := time.Now()
-		user.CreatedAt = &now
-		err := h.service.Create(r.Context(), &user)
-		if err != nil {
-			util.Json(w, http.StatusInternalServerError, util.Response{Status: err.Error()})
-			return
-		}
-		util.JsonOK(w)
+	user := &domain.User{}
+	err := json.NewDecoder(r.Body).Decode(user)
+	defer r.Body.Close()
+	if err != nil {
+		util.Json(w, http.StatusBadRequest, util.Response{
+			Status: err.Error(),
+		})
+		return
 	}
+	user.Id = uuid.New().String()
+	hashedPassword, er3 := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if er3 != nil {
+		util.JsonInternalError(w, errors.New("internal server error"))
+		return
+	}
+	user.Password = string(hashedPassword)
+	now := time.Now()
+	user.CreatedAt = &now
+	err = h.service.Create(r.Context(), user)
+	if err != nil {
+		util.Json(w, http.StatusInternalServerError, util.Response{Status: err.Error()})
+		return
+	}
+	util.JsonOK(w)
 }
 
 func (h *HttpUserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	req := &domain.UpdatePasswordRequest{}
 	userId := r.Context().Value("userId").(string)
-	err := core.Decode(w, r, req)
+	err := json.NewDecoder(r.Body).Decode(req)
+	defer r.Body.Close()
 	if err != nil {
-		util.Json(w, http.StatusBadRequest, util.Response{Status: err.Error()})
+		util.Json(w, http.StatusBadRequest, util.Response{
+			Status: err.Error(),
+		})
 		return
 	}
 	err = h.service.UpdatePassword(r.Context(), userId, req.OldPassword, req.NewPassword)

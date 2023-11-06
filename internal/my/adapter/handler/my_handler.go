@@ -1,12 +1,11 @@
 package handler
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 
-	sv "github.com/core-go/core"
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 
 	"hostel-service/internal/my/domain"
@@ -14,14 +13,13 @@ import (
 	"hostel-service/internal/package/util"
 )
 
-func NewMyHandler(service service.MyService, validate func(context.Context, interface{}) ([]sv.ErrorMessage, error), logError func(context.Context, string, ...map[string]interface{})) *HttpMyHandler {
-	return &HttpMyHandler{service: service, validate: validate, logError: logError}
+func NewMyHandler(service service.MyService, validate *validator.Validate) *HttpMyHandler {
+	return &HttpMyHandler{service: service, validate: validate}
 }
 
 type HttpMyHandler struct {
 	service  service.MyService
-	validate func(context.Context, interface{}) ([]sv.ErrorMessage, error)
-	logError func(context.Context, string, ...map[string]interface{})
+	validate *validator.Validate
 }
 
 func (h *HttpMyHandler) GetMyPostLiked(w http.ResponseWriter, r *http.Request) {
@@ -41,7 +39,6 @@ func (h *HttpMyHandler) GetMyPosts(w http.ResponseWriter, r *http.Request) {
 	userId := r.Context().Value("userId").(string)
 	res, total, err := h.service.GetMyPosts(r.Context(), userId)
 	if err != nil {
-		h.logError(r.Context(), err.Error())
 		util.Json(w, http.StatusInternalServerError, util.Response{
 			Status: err.Error(),
 		})
@@ -73,16 +70,6 @@ func (h *HttpMyHandler) UpdateMyProfile(w http.ResponseWriter, r *http.Request) 
 		})
 		return
 	}
-	errors, err := h.validate(r.Context(), &user)
-	if err != nil {
-		util.JsonInternalError(w, err)
-		return
-	}
-	if len(errors) > 0 {
-		h.logError(r.Context(), err.Error())
-		util.Json(w, http.StatusUnprocessableEntity, errors)
-		return
-	}
 	user.Id = r.Context().Value("userId").(string)
 	err = h.service.UpdateMyProfile(r.Context(), &user)
 	if err != nil {
@@ -98,16 +85,6 @@ func (h *HttpMyHandler) UpdateMyAvatar(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	if err != nil {
 		util.JsonBadRequest(w, err)
-		return
-	}
-	errors, err := h.validate(r.Context(), &req)
-	if err != nil {
-		util.JsonInternalError(w, err)
-		return
-	}
-	if len(errors) > 0 {
-		h.logError(r.Context(), err.Error())
-		util.Json(w, http.StatusUnprocessableEntity, errors)
 		return
 	}
 	req.Id = r.Context().Value("userId").(string)

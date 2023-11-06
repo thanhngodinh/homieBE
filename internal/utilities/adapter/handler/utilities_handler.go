@@ -1,12 +1,12 @@
 package handler
 
 import (
-	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
-	sv "github.com/core-go/core"
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 
 	"hostel-service/internal/package/util"
@@ -16,18 +16,17 @@ import (
 
 func NewUtilitiesHandler(
 	service service.UtilitiesService,
-	validate func(context.Context, interface{}) ([]sv.ErrorMessage, error),
-	logError func(context.Context, string, ...map[string]interface{})) *HttpUtilitiesHandler {
+	validate *validator.Validate,
+) *HttpUtilitiesHandler {
 	return &HttpUtilitiesHandler{
 		service:  service,
 		validate: validate,
-		logError: logError}
+	}
 }
 
 type HttpUtilitiesHandler struct {
 	service  service.UtilitiesService
-	validate func(context.Context, interface{}) ([]sv.ErrorMessage, error)
-	logError func(context.Context, string, ...map[string]interface{})
+	validate *validator.Validate
 }
 
 func (h *HttpUtilitiesHandler) GetAllUtilities(w http.ResponseWriter, r *http.Request) {
@@ -49,27 +48,15 @@ func (h *HttpUtilitiesHandler) CreateUtilities(w http.ResponseWriter, r *http.Re
 		})
 		return
 	}
-	errors, er2 := h.validate(r.Context(), &utilities)
-	if er2 != nil {
-		h.logError(r.Context(), er2.Error())
-		http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
-		return
-	}
-	if len(errors) > 0 {
-		h.logError(r.Context(), er2.Error())
-		util.Json(w, http.StatusUnprocessableEntity, errors)
-		return
-	}
 	utilities.CreatedBy = r.Context().Value("userId").(string)
 	_, er3 := h.service.CreateUtilities(r.Context(), &utilities)
 	if er3 != nil {
-		h.logError(r.Context(), er3.Error())
 		if util.IsDefinedErrorType(er3) {
 			util.Json(w, http.StatusBadRequest, util.Response{
 				Status: er3.Error(),
 			})
 		} else {
-			http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
+			util.JsonInternalError(w, errors.New("internal server error"))
 		}
 	} else {
 		util.Json(w, http.StatusCreated, util.Response{
@@ -103,26 +90,14 @@ func (h *HttpUtilitiesHandler) UpdateUtilities(w http.ResponseWriter, r *http.Re
 		})
 		return
 	}
-	errors, er2 := h.validate(r.Context(), &utilities)
-	if er2 != nil {
-		h.logError(r.Context(), er2.Error())
-		http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
-		return
-	}
-	if len(errors) > 0 {
-		h.logError(r.Context(), er2.Error())
-		util.Json(w, http.StatusUnprocessableEntity, errors)
-		return
-	}
 	_, er3 := h.service.UpdateUtilities(r.Context(), &utilities)
 	if er3 != nil {
-		h.logError(r.Context(), er3.Error())
 		if util.IsDefinedErrorType(er3) {
 			util.Json(w, http.StatusBadRequest, util.Response{
 				Status: er3.Error(),
 			})
 		} else {
-			http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
+			util.JsonInternalError(w, errors.New("internal server error"))
 		}
 	} else {
 		util.Json(w, http.StatusOK, util.Response{
@@ -141,7 +116,7 @@ func (h *HttpUtilitiesHandler) DeleteUtilities(w http.ResponseWriter, r *http.Re
 	}
 	res, err := h.service.DeleteUtilities(r.Context(), code)
 	if err != nil {
-		http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
+		util.JsonInternalError(w, errors.New("internal server error"))
 	} else {
 		if res == 1 {
 			util.Json(w, http.StatusOK, util.Response{

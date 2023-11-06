@@ -9,16 +9,17 @@ import (
 	user_port "hostel-service/internal/user/port"
 	"time"
 
+	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/google/uuid"
 )
 
 type PostService interface {
-	GetPosts(ctx context.Context, hostel *domain.PostFilter, userId string) ([]domain.Post, int64, error)
-	SearchPosts(ctx context.Context, hostel *domain.PostFilter, userId string) ([]domain.Post, int64, error)
+	GetPosts(ctx context.Context, post *domain.PostFilter, userId string) ([]domain.Post, int64, error)
+	SearchPosts(ctx context.Context, post *domain.PostFilter, userId string) ([]domain.Post, int64, error)
 	GetSuggestPosts(ctx context.Context, userId string) ([]domain.Post, int64, error)
 	GetPostById(ctx context.Context, postId string, userId string) (*domain.Post, error)
-	CreatePost(ctx context.Context, hostel *domain.Post) (int64, error)
-	UpdatePost(ctx context.Context, hostel *domain.Post) (int64, error)
+	CreatePost(ctx context.Context, post *domain.Post) (int64, error)
+	UpdatePost(ctx context.Context, post *domain.Post) (int64, error)
 	DeletePost(ctx context.Context, postId string) (int64, error)
 }
 
@@ -27,35 +28,36 @@ func NewPostService(
 	userRepo user_port.UserRepository,
 	rateRepo rate_port.RateRepository,
 ) PostService {
-	return &hostelService{
+	return &postService{
 		repository: repository,
 		userRepo:   userRepo,
 		rateRepo:   rateRepo,
 	}
 }
 
-type hostelService struct {
-	repository port.PostRepository
-	userRepo   user_port.UserRepository
-	rateRepo   rate_port.RateRepository
+type postService struct {
+	repository          port.PostRepository
+	userRepo            user_port.UserRepository
+	rateRepo            rate_port.RateRepository
+	ElasticsearchClient *elasticsearch.Client
 }
 
-func (s *hostelService) GetPosts(ctx context.Context, hostel *domain.PostFilter, userId string) ([]domain.Post, int64, error) {
-	return s.repository.GetPosts(ctx, hostel, userId)
+func (s *postService) GetPosts(ctx context.Context, post *domain.PostFilter, userId string) ([]domain.Post, int64, error) {
+	return s.repository.GetPosts(ctx, post, userId)
 }
 
-func (s *hostelService) SearchPosts(ctx context.Context, hostel *domain.PostFilter, userId string) ([]domain.Post, int64, error) {
-	return s.repository.GetPosts(ctx, hostel, userId)
+func (s *postService) SearchPosts(ctx context.Context, post *domain.PostFilter, userId string) ([]domain.Post, int64, error) {
+	return s.repository.GetPosts(ctx, post, userId)
 }
 
-func (s *hostelService) GetSuggestPosts(ctx context.Context, userId string) ([]domain.Post, int64, error) {
+func (s *postService) GetSuggestPosts(ctx context.Context, userId string) ([]domain.Post, int64, error) {
 	if userId == "" {
-		hostel := &domain.PostFilter{
+		post := &domain.PostFilter{
 			PageSize: 10,
 			PageIdx:  0,
 			Sort:     "view desc",
 		}
-		return s.repository.GetPosts(ctx, hostel, userId)
+		return s.repository.GetPosts(ctx, post, userId)
 	}
 	userSuggest, err := s.userRepo.GetUserSuggest(ctx, userId)
 	if err != nil {
@@ -65,7 +67,7 @@ func (s *hostelService) GetSuggestPosts(ctx context.Context, userId string) ([]d
 	costTo := userSuggest.Cost + 500000
 	capacityFrom := userSuggest.Capacity - 1
 	capacityTo := userSuggest.Capacity + 1
-	hostel := &domain.PostFilter{
+	post := &domain.PostFilter{
 		Province:     &userSuggest.Province,
 		District:     &userSuggest.District,
 		CostFrom:     &costFrom,
@@ -76,22 +78,22 @@ func (s *hostelService) GetSuggestPosts(ctx context.Context, userId string) ([]d
 		PageIdx:      0,
 		Sort:         "view desc",
 	}
-	posts, total, err := s.repository.GetPosts(ctx, hostel, userId)
+	posts, total, err := s.repository.GetPosts(ctx, post, userId)
 	if total < 10 {
-		hostel := &domain.PostFilter{
+		post := &domain.PostFilter{
 			Province: &userSuggest.Province,
 			PageSize: int(10 - total),
 			PageIdx:  0,
 			Sort:     "view asc",
 		}
-		addPosts, addTotal, _ := s.repository.GetPosts(ctx, hostel, userId)
+		addPosts, addTotal, _ := s.repository.GetPosts(ctx, post, userId)
 		posts = append(posts, addPosts...)
 		total += addTotal
 	}
 	return posts, total, err
 }
 
-func (s *hostelService) GetPostById(ctx context.Context, postId string, userId string) (*domain.Post, error) {
+func (s *postService) GetPostById(ctx context.Context, postId string, userId string) (*domain.Post, error) {
 	res, err := s.repository.GetPostById(ctx, postId)
 	if err != nil {
 		return nil, err
@@ -112,21 +114,52 @@ func (s *hostelService) GetPostById(ctx context.Context, postId string, userId s
 	return res, err
 }
 
-func (s *hostelService) CreatePost(ctx context.Context, hostel *domain.Post) (int64, error) {
-	hostel.Id = "post-" + uuid.NewString()
-	hostel.CreatedAt = time.Now()
-	hostel.EndedAt = time.Now().AddDate(0, 1, 0)
-	hostel.Status = domain.PostActive
-	return s.repository.CreatePost(ctx, hostel)
+func (s *postService) CreatePost(ctx context.Context, post *domain.Post) (int64, error) {
+	post.Id = "post-" + uuid.NewString()
+	post.CreatedAt = time.Now()
+	post.EndedAt = time.Now().AddDate(0, 1, 0)
+	post.Status = domain.PostActive
+	return s.repository.CreatePost(ctx, post)
 }
 
-func (s *hostelService) UpdatePost(ctx context.Context, hostel *domain.Post) (int64, error) {
+func (s *postService) UpdatePost(ctx context.Context, post *domain.Post) (int64, error) {
 	t := time.Now()
-	hostel.UpdatedAt = &t
-	return s.repository.UpdatePost(ctx, hostel)
+	post.UpdatedAt = &t
+	return s.repository.UpdatePost(ctx, post)
 }
 
-func (s *hostelService) DeletePost(ctx context.Context, postId string) (int64, error) {
-	hostel := &domain.Post{Id: postId}
-	return s.repository.DeletePost(ctx, hostel)
+func (s *postService) DeletePost(ctx context.Context, postId string) (int64, error) {
+	post := &domain.Post{Id: postId}
+	return s.repository.DeletePost(ctx, post)
 }
+
+// func (s *postService) IndexToElasticsearch(record domain.Post) error {
+// 	doc := map[string]interface{}{
+// 		"id":          record.ID,
+// 		"name":        record.Name,
+// 		"description": record.Description,
+// 		// Thêm các trường khác
+// 	}
+
+// 	// Lập chỉ mục dữ liệu vào Elasticsearch
+// 	docJSON := fmt.Sprintf(`{
+// 		"index": {
+// 			"_index": "your_index",
+// 			"_id": "%d"
+// 		}
+// 	}`, record.ID)
+
+// 	req := esapi.IndexRequest{
+// 		Index:      "your_index",
+// 		DocumentID: fmt.Sprintf("%d", record.ID),
+// 		Body:       strings.NewReader(docJSON),
+// 	}
+// 	reqop, err := req.Do(context.Background(), s.ElasticsearchClient)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	if reqop.Error != nil {
+// 		return reqop.Error
+// 	}
+// 	return nil
+// }

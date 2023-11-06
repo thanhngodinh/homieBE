@@ -1,11 +1,11 @@
 package handler
 
 import (
-	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 
-	sv "github.com/core-go/core"
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 
 	"hostel-service/internal/package/util"
@@ -15,7 +15,7 @@ import (
 
 func NewRateHandler(
 	service service.RateService,
-	validate func(context.Context, interface{}) ([]sv.ErrorMessage, error),
+	validate *validator.Validate,
 ) *HttpRateHandler {
 	return &HttpRateHandler{
 		service:  service,
@@ -25,7 +25,7 @@ func NewRateHandler(
 
 type HttpRateHandler struct {
 	service  service.RateService
-	validate func(context.Context, interface{}) ([]sv.ErrorMessage, error)
+	validate *validator.Validate
 }
 
 func (h *HttpRateHandler) GetPostRate(w http.ResponseWriter, r *http.Request) {
@@ -52,15 +52,6 @@ func (h *HttpRateHandler) CreateRate(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	errors, er2 := h.validate(r.Context(), rate)
-	if er2 != nil {
-		http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
-		return
-	}
-	if len(errors) > 0 {
-		util.Json(w, http.StatusUnprocessableEntity, errors)
-		return
-	}
 	rate.UserId = r.Context().Value("userId").(string)
 	_, er3 := h.service.CreateRate(r.Context(), rate)
 	if er3 != nil {
@@ -69,7 +60,7 @@ func (h *HttpRateHandler) CreateRate(w http.ResponseWriter, r *http.Request) {
 				Status: er3.Error(),
 			})
 		} else {
-			http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
+			util.JsonInternalError(w, errors.New("internal server error"))
 		}
 	} else {
 		util.Json(w, http.StatusCreated, util.Response{
@@ -95,15 +86,6 @@ func (h *HttpRateHandler) UpdateRate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	rate.UserId = r.Context().Value("userId").(string)
-	errors, er2 := h.validate(r.Context(), rate)
-	if er2 != nil {
-		http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
-		return
-	}
-	if len(errors) > 0 {
-		util.Json(w, http.StatusUnprocessableEntity, errors)
-		return
-	}
 	_, er3 := h.service.UpdateRate(r.Context(), rate)
 	if er3 != nil {
 		if util.IsDefinedErrorType(er3) {
@@ -111,7 +93,7 @@ func (h *HttpRateHandler) UpdateRate(w http.ResponseWriter, r *http.Request) {
 				Status: er3.Error(),
 			})
 		} else {
-			http.Error(w, sv.InternalServerError, http.StatusInternalServerError)
+			util.JsonInternalError(w, errors.New("internal server error"))
 			return
 		}
 	}
