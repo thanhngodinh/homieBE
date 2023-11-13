@@ -27,19 +27,21 @@ func NewPostService(
 	repository port.PostRepository,
 	userRepo user_port.UserRepository,
 	rateRepo rate_port.RateRepository,
+	esClient *elasticsearch.Client,
 ) PostService {
 	return &postService{
 		repository: repository,
 		userRepo:   userRepo,
 		rateRepo:   rateRepo,
+		esClient:   esClient,
 	}
 }
 
 type postService struct {
-	repository          port.PostRepository
-	userRepo            user_port.UserRepository
-	rateRepo            rate_port.RateRepository
-	ElasticsearchClient *elasticsearch.Client
+	repository port.PostRepository
+	userRepo   user_port.UserRepository
+	rateRepo   rate_port.RateRepository
+	esClient   *elasticsearch.Client
 }
 
 func (s *postService) GetPosts(ctx context.Context, post *domain.PostFilter, userId string) ([]domain.Post, int64, error) {
@@ -133,33 +135,62 @@ func (s *postService) DeletePost(ctx context.Context, postId string) (int64, err
 	return s.repository.DeletePost(ctx, post)
 }
 
-// func (s *postService) IndexToElasticsearch(record domain.Post) error {
-// 	doc := map[string]interface{}{
-// 		"id":          record.ID,
-// 		"name":        record.Name,
-// 		"description": record.Description,
-// 		// Thêm các trường khác
+// func (s *postService) ESearchPosts(ctx context.Context, post *domain.PostFilter, userId string) ([]domain.Post, int64, error) {
+// 	elasticQuery := map[string]interface{}{
+// 		"query": map[string]interface{}{
+// 			"bool": map[string]interface{}{
+// 				"should": []map[string]interface{}{
+// 					{
+// 						"match": map[string]interface{}{
+// 							"name": post.Name,
+// 						},
+// 					},
+// 					{
+// 						"match": map[string]interface{}{
+// 							"cost": post.Cost,
+// 						},
+// 					},
+// 					{
+// 						"match": map[string]interface{}{
+// 							"province": province,
+// 						},
+// 					},
+// 				},
+// 			},
+// 		},
 // 	}
 
-// 	// Lập chỉ mục dữ liệu vào Elasticsearch
-// 	docJSON := fmt.Sprintf(`{
-// 		"index": {
-// 			"_index": "your_index",
-// 			"_id": "%d"
-// 		}
-// 	}`, record.ID)
-
-// 	req := esapi.IndexRequest{
-// 		Index:      "your_index",
-// 		DocumentID: fmt.Sprintf("%d", record.ID),
-// 		Body:       strings.NewReader(docJSON),
-// 	}
-// 	reqop, err := req.Do(context.Background(), s.ElasticsearchClient)
+// 	elasticQueryJSON, err := json.Marshal(elasticQuery)
 // 	if err != nil {
-// 		return err
+// 		http.Error(w, "Error marshaling JSON", http.StatusInternalServerError)
+// 		return
 // 	}
-// 	if reqop.Error != nil {
-// 		return reqop.Error
+
+// 	// Gửi yêu cầu tìm kiếm đến Elasticsearch
+// 	req := esapi.SearchRequest{
+// 		Index: []string{"post_index"}, // Thay "your_index" bằng tên index của bạn
+// 		Body:  strings.NewReader(string(elasticQueryJSON)),
 // 	}
-// 	return nil
+
+// 	res, err := req.Do(context.Background(), es)
+// 	if err != nil {
+// 		http.Error(w, "Error searching data in Elasticsearch", http.StatusInternalServerError)
+// 		return
+// 	}
+// 	defer res.Body.Close()
+
+// 	if res.IsError() {
+// 		http.Error(w, "Elasticsearch error: "+res.Status(), http.StatusInternalServerError)
+// 		fmt.Println(res)
+// 		return
+// 	}
+
+// 	var result SearchResult
+// 	if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
+// 		http.Error(w, "Error decoding Elasticsearch response", http.StatusInternalServerError)
+// 		return
+// 	}
+
+// 	w.Header().Set("Content-Type", "application/json")
+// 	json.NewEncoder(w).Encode(result.Hits.Hits)
 // }

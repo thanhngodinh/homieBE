@@ -2,17 +2,19 @@ package app
 
 import (
 	"context"
+	"log"
 
+	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/go-playground/validator/v10"
 	_ "github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
-	hostelHandler "hostel-service/internal/post/adapter/handler"
-	hostelRepository "hostel-service/internal/post/adapter/repository"
-	hostelPort "hostel-service/internal/post/port"
-	hostelService "hostel-service/internal/post/service"
+	postHandler "hostel-service/internal/post/adapter/handler"
+	postRepository "hostel-service/internal/post/adapter/repository"
+	postPort "hostel-service/internal/post/port"
+	postService "hostel-service/internal/post/service"
 
 	userHandler "hostel-service/internal/user/adapter/handler"
 	userRepository "hostel-service/internal/user/adapter/repository"
@@ -41,7 +43,7 @@ import (
 )
 
 type ApplicationContext struct {
-	Post      hostelPort.PostHandler
+	Post      postPort.PostHandler
 	Utilities utilitiesPort.UtilitiesHandler
 	User      userPort.UserHandler
 	My        myPort.MyHandler
@@ -55,25 +57,34 @@ func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
 		return nil, err
 	}
 
+	esCfg := elasticsearch.Config{
+		CloudID: "dbf646249c124369bf2e94bafc31712a:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvJGUzYWFlYzIyZTAwNDRmMjNiZjEzMmEzYjEzZjE4ZmM5JDVlY2VjZGExOTIwZjRjMmQ4MzU1MTUwNTcxMDQzOTRl",
+		APIKey:  "UmdxOWtJc0IzVjdNaEowcDJNQ2w6ak8tMGNYSHlRczZGZlRJZlNhYlZ6QQ==",
+	}
+	es, err := elasticsearch.NewClient(esCfg)
+	if err != nil {
+		log.Fatalf("Error creating the client: %s", err)
+	}
+
 	validate := validator.New()
 
 	// Repo
-	hostelRepository := hostelRepository.NewPostAdapter(gormDb)
+	postRepository := postRepository.NewPostAdapter(gormDb)
 	userRepository := userRepository.NewUserRepo(gormDb)
 	myRepository := myRepository.NewMyAdapter(gormDb)
 	utilitiesRepository := utilitiesRepository.NewUtilitiesAdapter(gormDb)
 	rateRepository := rateRepository.NewRateAdapter(gormDb)
 
-	hostelService := hostelService.NewPostService(hostelRepository, userRepository, rateRepository)
-	hostelHandler := hostelHandler.NewPostHandler(hostelService, validate)
+	postService := postService.NewPostService(postRepository, userRepository, rateRepository, es)
+	postHandler := postHandler.NewPostHandler(postService, validate)
 
 	utilitiesService := utilitiesService.NewUtilitiesService(utilitiesRepository)
 	utilitiesHandler := utilitiesHandler.NewUtilitiesHandler(utilitiesService, validate)
 
-	userService := userService.NewUserService(userRepository, hostelRepository)
+	userService := userService.NewUserService(userRepository, postRepository)
 	userHandler := userHandler.NewUserHandler(userService, validate)
 
-	myService := myService.NewMyService(myRepository, hostelRepository)
+	myService := myService.NewMyService(myRepository, postRepository)
 	myHandler := myHandler.NewMyHandler(myService, validate)
 
 	rateService := rateService.NewRateService(rateRepository)
@@ -83,7 +94,7 @@ func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
 	chatHandler := chatHandler.NewChatHandler(chatService)
 
 	return &ApplicationContext{
-		Post:      hostelHandler,
+		Post:      postHandler,
 		Utilities: utilitiesHandler,
 		User:      userHandler,
 		My:        myHandler,

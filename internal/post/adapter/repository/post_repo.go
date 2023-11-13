@@ -113,7 +113,7 @@ func (r *PostAdapter) CreatePost(ctx context.Context, post *domain.Post) (int64,
 	rate := &domain.RateInfo{
 		PostId: post.Id,
 	}
-	res = r.DB.Table("post_rate_ifo").Create(rate)
+	res = r.DB.Table("post_rate_info").Create(rate)
 	return res.RowsAffected, res.Error
 }
 
