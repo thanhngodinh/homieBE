@@ -58,3 +58,8 @@ type PostUtilities struct {
 type RateInfo struct {
 	PostId string `gorm:"column:post_id"`
 }
+
+type Compare struct {
+	Post1 Post `json:"post1"`
+	Post2 Post `json:"post2"`
+}

@@ -34,7 +34,9 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 	hostelPublicRouter := r.PathPrefix("/posts").Subrouter()
 	hostelPublicRouter.HandleFunc("", app.Post.GetPosts).Methods(GET)
 	hostelPublicRouter.HandleFunc("/search", app.Post.SearchPosts).Methods(POST)
+	hostelPublicRouter.HandleFunc("/esearch", app.Post.ElasticSearchPosts).Methods(POST)
 	hostelPublicRouter.HandleFunc("/suggest", app.Post.GetSuggestPosts).Methods(GET)
+	hostelPublicRouter.HandleFunc("/compare/{post1}/{post2}", app.Post.GetCompare).Methods(GET)
 	hostelPublicRouter.HandleFunc("/{code}", app.Post.GetPostById).Methods(GET)
 	hostelPublicRouter.Use(internalMid.PublicAuth)
 

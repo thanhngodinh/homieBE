@@ -36,11 +36,11 @@ func (h *HttpPostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 	pageSizeParam := r.URL.Query().Get("pageSize")
 	sort := r.URL.Query().Get("sort")
 
-	hostel := &domain.PostFilter{
+	post := &domain.PostFilter{
 		Sort: "created_at desc",
 	}
 	if len(sort) > 0 {
-		hostel.Sort = sort
+		post.Sort = sort
 	}
 	if len(pageIdxParam) > 0 {
 		pageIdx, err := strconv.Atoi(pageIdxParam)
@@ -50,9 +50,9 @@ func (h *HttpPostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 			})
 			return
 		}
-		hostel.PageIdx = pageIdx
+		post.PageIdx = pageIdx
 	} else {
-		hostel.PageIdx = 0
+		post.PageIdx = 0
 	}
 
 	if len(pageSizeParam) > 0 {
@@ -63,12 +63,12 @@ func (h *HttpPostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 			})
 			return
 		}
-		hostel.PageSize = pageSize
+		post.PageSize = pageSize
 	} else {
-		hostel.PageSize = 10
+		post.PageSize = 10
 	}
 
-	posts, total, err := h.service.GetPosts(r.Context(), hostel, userId)
+	posts, total, err := h.service.GetPosts(r.Context(), post, userId)
 	if err != nil {
 		util.JsonInternalError(w, err)
 	} else {
@@ -80,10 +80,10 @@ func (h *HttpPostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *HttpPostHandler) SearchPosts(w http.ResponseWriter, r *http.Request) {
-	hostel := &domain.PostFilter{
+	post := &domain.PostFilter{
 		Sort: "created_at desc",
 	}
-	er1 := json.NewDecoder(r.Body).Decode(hostel)
+	er1 := json.NewDecoder(r.Body).Decode(post)
 	defer r.Body.Close()
 	if er1 != nil {
 		util.Json(w, http.StatusBadRequest, util.Response{
@@ -92,7 +92,31 @@ func (h *HttpPostHandler) SearchPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userId := r.Context().Value("userId").(string)
-	posts, total, err := h.service.GetPosts(r.Context(), hostel, userId)
+	posts, total, err := h.service.GetPosts(r.Context(), post, userId)
+	if err != nil {
+		util.JsonInternalError(w, err)
+	} else {
+		util.Json(w, http.StatusOK, util.Response{
+			Data:  posts,
+			Total: total,
+		})
+	}
+}
+
+func (h *HttpPostHandler) ElasticSearchPosts(w http.ResponseWriter, r *http.Request) {
+	post := &domain.PostFilter{
+		Sort: "created_at desc",
+	}
+	er1 := json.NewDecoder(r.Body).Decode(post)
+	defer r.Body.Close()
+	if er1 != nil {
+		util.Json(w, http.StatusBadRequest, util.Response{
+			Status: er1.Error(),
+		})
+		return
+	}
+	userId := r.Context().Value("userId").(string)
+	posts, total, err := h.service.ESearchPosts(r.Context(), post, userId)
 	if err != nil {
 		util.JsonInternalError(w, err)
 	} else {
@@ -125,19 +149,39 @@ func (h *HttpPostHandler) GetPostById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userId := r.Context().Value("userId").(string)
-	hostel, err := h.service.GetPostById(r.Context(), code, userId)
+	post, err := h.service.GetPostById(r.Context(), code, userId)
 	if err != nil {
 		util.JsonInternalError(w, err)
-	} else if hostel == nil {
+	} else if post == nil {
 		util.Json(w, http.StatusNotFound, util.Response{})
 	} else {
-		util.Json(w, http.StatusOK, hostel)
+		util.Json(w, http.StatusOK, post)
+	}
+}
+
+func (h *HttpPostHandler) GetCompare(w http.ResponseWriter, r *http.Request) {
+	post1 := mux.Vars(r)["post1"]
+	post2 := mux.Vars(r)["post2"]
+	if len(post1) == 0 || len(post2) == 0 {
+		util.Json(w, http.StatusBadRequest, util.Response{
+			Status: util.ErrorCodeEmpty.Error(),
+		})
+		return
+	}
+	userId := r.Context().Value("userId").(string)
+	post, err := h.service.GetCompare(r.Context(), post1, post2, userId)
+	if err != nil {
+		util.JsonInternalError(w, err)
+	} else if post == nil {
+		util.Json(w, http.StatusNotFound, util.Response{})
+	} else {
+		util.Json(w, http.StatusOK, domain.Compare{Post1: post[0], Post2: post[1]})
 	}
 }
 
 func (h *HttpPostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
-	var hostel domain.Post
-	er1 := json.NewDecoder(r.Body).Decode(&hostel)
+	var post domain.Post
+	er1 := json.NewDecoder(r.Body).Decode(&post)
 	defer r.Body.Close()
 	if er1 != nil {
 		util.Json(w, http.StatusBadRequest, util.Response{
@@ -145,8 +189,8 @@ func (h *HttpPostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	hostel.CreatedBy = r.Context().Value("userId").(string)
-	_, er3 := h.service.CreatePost(r.Context(), &hostel)
+	post.CreatedBy = r.Context().Value("userId").(string)
+	_, er3 := h.service.CreatePost(r.Context(), &post)
 	if er3 != nil {
 		if util.IsDefinedErrorType(er3) {
 			util.Json(w, http.StatusBadRequest, util.Response{
@@ -157,14 +201,14 @@ func (h *HttpPostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		util.Json(w, http.StatusCreated, util.Response{
-			Data: hostel,
+			Data: post,
 		})
 	}
 }
 
 func (h *HttpPostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
-	var hostel domain.Post
-	er1 := json.NewDecoder(r.Body).Decode(&hostel)
+	var post domain.Post
+	er1 := json.NewDecoder(r.Body).Decode(&post)
 	defer r.Body.Close()
 	if er1 != nil {
 		util.Json(w, http.StatusBadRequest, util.Response{
@@ -179,15 +223,15 @@ func (h *HttpPostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	if len(hostel.Id) == 0 {
-		hostel.Id = code
-	} else if code != hostel.Id {
+	if len(post.Id) == 0 {
+		post.Id = code
+	} else if code != post.Id {
 		util.Json(w, http.StatusBadRequest, util.Response{
 			Status: util.ErrorCodeNotMatch.Error(),
 		})
 		return
 	}
-	_, er3 := h.service.UpdatePost(r.Context(), &hostel)
+	_, er3 := h.service.UpdatePost(r.Context(), &post)
 	if er3 != nil {
 		if util.IsDefinedErrorType(er3) {
 			util.Json(w, http.StatusBadRequest, util.Response{
@@ -198,7 +242,7 @@ func (h *HttpPostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		util.Json(w, http.StatusOK, util.Response{
-			Data: hostel,
+			Data: post,
 		})
 	}
 }

@@ -3,10 +3,16 @@ package domain
 type SearchResult struct {
 	Hits struct {
 		Total struct {
-			Value int `json:"value"`
-		} `json:"total"`
+			Value int `json:"value,omitepmty"`
+		} `json:"total,omitepmty"`
 		Hits []struct {
-			Source map[string]interface{} `json:"_source"`
-		} `json:"hits"`
-	} `json:"hits"`
+			Source Post `json:"_source,omitepmty"`
+		} `json:"hits,omitepmty"`
+	} `json:"hits,omitepmty"`
+}
+
+type Range struct {
+	LTE   int `json:"lte,omitepmty"`
+	GTE   int `json:"gte,omitepmty"`
+	Boost int `json:"boost,omitepmty"`
 }

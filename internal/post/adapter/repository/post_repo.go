@@ -6,6 +6,7 @@ import (
 	"hostel-service/internal/post/domain"
 	"time"
 
+	"github.com/lib/pq"
 	"gorm.io/gorm"
 )
 
@@ -29,49 +30,49 @@ func (r *PostAdapter) GetPosts(ctx context.Context, filter *domain.PostFilter, u
 	array_remove(array_agg(post_utilities.utility_id), NULL) as utilities,
 	posts.*`, userId)).
 		Joins("left join post_utilities on post_utilities.post_id = posts.id").Group("posts.id")
-	if filter.Name != nil && len(*filter.Name) > 0 {
-		tx = tx.Where("name ilike ?", fmt.Sprintf("%%%v%%", *filter.Name))
+	if filter.Name != "" {
+		tx = tx.Where("name ilike ?", fmt.Sprintf("%%%v%%", filter.Name))
 	}
-	if filter.Province != nil && len(*filter.Province) > 0 {
-		tx = tx.Where("province ilike ?", fmt.Sprintf("%%%v%%", *filter.Province))
+	if filter.Province != "" {
+		tx = tx.Where("province ilike ?", fmt.Sprintf("%%%v%%", filter.Province))
 	}
-	if filter.District != nil && len(*filter.District) > 0 {
-		tx = tx.Where("district ilike ?", fmt.Sprintf("%%%v%%", *filter.District))
+	if filter.District != "" {
+		tx = tx.Where("district ilike ?", fmt.Sprintf("%%%v%%", filter.District))
 	}
-	if filter.Ward != nil && len(*filter.Ward) > 0 {
-		tx = tx.Where("ward = ilike ?", fmt.Sprintf("%%%v%%", *filter.Ward))
+	if filter.Ward != "" {
+		tx = tx.Where("ward = ilike ?", fmt.Sprintf("%%%v%%", filter.Ward))
 	}
-	if filter.Street != nil && len(*filter.Street) > 0 {
-		tx = tx.Where("street ilike ?", fmt.Sprintf("%%%v%%", *filter.Street))
+	if filter.Street != "" {
+		tx = tx.Where("street ilike ?", fmt.Sprintf("%%%v%%", filter.Street))
 	}
-	if filter.Status != nil && len(*filter.Status) > 0 {
+	if filter.Status != "" {
 		tx = tx.Where("status = ?", filter.Status)
 	}
-	if filter.CostFrom != nil {
+	if filter.CostFrom != 0 {
 		tx = tx.Where("cost >= ?", filter.CostFrom)
 	}
-	if filter.CostTo != nil {
+	if filter.CostTo != 0 {
 		tx = tx.Where("cost <= ?", filter.CostTo)
 	}
-	if filter.DepositFrom != nil {
+	if filter.DepositFrom != 0 {
 		tx = tx.Where("deposit >= ?", filter.DepositFrom)
 	}
-	if filter.DepositTo != nil {
+	if filter.DepositTo != 0 {
 		tx = tx.Where("deposit <= ?", filter.DepositTo)
 	}
-	if filter.Capacity != nil {
+	if filter.Capacity != 0 {
 		tx = tx.Where("capacity = ?", filter.Capacity)
 	}
-	if filter.CapacityFrom != nil {
+	if filter.CapacityFrom != 0 {
 		tx = tx.Where("capacity >= ?", filter.CapacityFrom)
 	}
-	if filter.CapacityTo != nil {
+	if filter.CapacityTo != 0 {
 		tx = tx.Where("capacity <= ?", filter.CapacityTo)
 	}
 	if filter.CreatedAt != nil {
 		tx = tx.Where("created_at = ?", filter.CreatedAt)
 	}
-	if filter.CreatedBy != nil && len(*filter.CreatedBy) > 0 {
+	if filter.CreatedBy != "" {
 		tx = tx.Where("created_by = ?", filter.CreatedBy)
 	}
 	if filter.IsIncludeEnded == false {
@@ -99,6 +100,18 @@ func (r *PostAdapter) GetPostById(ctx context.Context, id string) (*domain.Post,
 		Where("posts.id = ?", id).First(&post)
 	r.DB.Table("posts").Where("id = ?", id).Updates(map[string]interface{}{"view": post.View + 1})
 	return &post, nil
+}
+
+func (r *PostAdapter) GetPostByIds(ctx context.Context, ids []string) ([]domain.Post, error) {
+	var post []domain.Post
+
+	r.DB.Table("posts").
+		Select(`posts.*,
+		array_remove(array_agg(post_utilities.utility_id), NULL) as utilities`).
+		Joins("join post_utilities on post_utilities.post_id = posts.id").
+		Group("posts.id").
+		Where("posts.id = any(?)", pq.Array(ids)).Find(&post)
+	return post, nil
 }
 
 func (r *PostAdapter) CreatePost(ctx context.Context, post *domain.Post) (int64, error) {
