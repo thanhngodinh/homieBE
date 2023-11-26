@@ -29,8 +29,23 @@ CREATE TABLE "users" (
   "deleted_at" timestamptz
 );
 
+CREATE TABLE "admins" (
+  "id" varchar(40) PRIMARY KEY,
+  "username" varchar(100) NOT NULL,
+  "password" varchar(100) NOT NULL,
+  "phone" varchar(20) default '',
+  "email" varchar(100) NOT NULL,
+  "avatar_url" varchar(500) default 'https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/default-avatar.png',
+  "display_name" varchar(100) default '',
+  "created_at" timestamptz default (current_timestamp),
+  "created_by" varchar(100) default 'system',
+  "updated_at" timestamptz,
+  "updated_by" varchar(100) default '',
+  "deleted_at" timestamptz
+);
+
 CREATE TYPE hostel_types AS ENUM ('Ký túc xá', 'Phòng cho thuê', 'Nhà nguyên căn', 'Phòng ở ghép', 'Căn hộ');
-CREATE TYPE post_status AS ENUM ('W', 'A', 'I');
+CREATE TYPE post_status AS ENUM ('W', 'A', 'I', 'V');
 
 CREATE TABLE "posts" (
   "id" varchar(40) PRIMARY KEY,

@@ -25,6 +25,7 @@ type PostService interface {
 	GetCompare(ctx context.Context, post1Id string, post2Id string, userId string) ([]domain.Post, error)
 	CreatePost(ctx context.Context, post *domain.Post) (int64, error)
 	UpdatePost(ctx context.Context, post *domain.Post) (int64, error)
+	UpdatePostStatus(ctx context.Context, userId string, status string) (int64, error)
 	DeletePost(ctx context.Context, postId string) (int64, error)
 }
 
@@ -142,6 +143,10 @@ func (s *postService) UpdatePost(ctx context.Context, post *domain.Post) (int64,
 	t := time.Now()
 	post.UpdatedAt = &t
 	return s.repository.UpdatePost(ctx, post)
+}
+
+func (s *postService) UpdatePostStatus(ctx context.Context, userId string, status string) (int64, error) {
+	return s.repository.UpdatePostStatus(ctx, userId, status)
 }
 
 func (s *postService) DeletePost(ctx context.Context, postId string) (int64, error) {

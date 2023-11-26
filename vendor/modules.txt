@@ -670,12 +670,18 @@ github.com/go-playground/validator/v10
 # github.com/golang-jwt/jwt v3.2.2+incompatible
 ## explicit
 github.com/golang-jwt/jwt
+# github.com/google/go-querystring v1.0.0
+## explicit
+github.com/google/go-querystring/query
 # github.com/google/uuid v1.3.0
 ## explicit
 github.com/google/uuid
 # github.com/gorilla/mux v1.8.0
 ## explicit; go 1.12
 github.com/gorilla/mux
+# github.com/gorilla/schema v1.1.0
+## explicit
+github.com/gorilla/schema
 # github.com/gorilla/websocket v1.5.0
 ## explicit; go 1.12
 github.com/gorilla/websocket
@@ -741,6 +747,9 @@ github.com/pelletier/go-toml
 # github.com/rs/cors v1.10.0
 ## explicit; go 1.13
 github.com/rs/cors
+# github.com/sfreiberg/gotwilio v1.0.0
+## explicit; go 1.13
+github.com/sfreiberg/gotwilio
 # github.com/sirupsen/logrus v1.9.0
 ## explicit; go 1.13
 github.com/sirupsen/logrus

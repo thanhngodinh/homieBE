@@ -12,7 +12,7 @@ type MyService interface {
 	GetMyPostLiked(ctx context.Context, userId string) ([]post_domain.Post, int64, error)
 	GetMyPosts(ctx context.Context, userId string) ([]post_domain.Post, int64, error)
 	LikePost(ctx context.Context, userId string, postId string) (int64, error)
-	GetMyProfile(ctx context.Context, userId string) (*domain.User, error)
+	GetMyProfile(ctx context.Context, userId string) (*domain.UserProfile, error)
 	UpdateMyProfile(ctx context.Context, user *domain.UpdateMyProfileReq) error
 	UpdateMyAvatar(ctx context.Context, user *domain.UpdateMyAvatarReq) error
 }
@@ -48,7 +48,7 @@ func (s *myService) LikePost(ctx context.Context, userId string, postId string) 
 	return s.myRepo.LikePost(ctx, up)
 }
 
-func (s *myService) GetMyProfile(ctx context.Context, userId string) (*domain.User, error) {
+func (s *myService) GetMyProfile(ctx context.Context, userId string) (*domain.UserProfile, error) {
 	return s.myRepo.GetMyProfile(ctx, userId)
 }
 

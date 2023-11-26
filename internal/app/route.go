@@ -14,14 +14,30 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 		return err
 	}
 
-	userRouter := r.PathPrefix("/my").Subrouter()
-	userRouter.HandleFunc("/liked-posts", app.My.GetMyPostLiked).Methods(GET)
-	userRouter.HandleFunc("/posts", app.My.GetMyPosts).Methods(GET)
-	userRouter.HandleFunc("/posts/{code}", app.Post.UpdatePost).Methods(PUT)
-	userRouter.HandleFunc("/password", app.User.UpdatePassword).Methods(PUT)
-	userRouter.HandleFunc("/profile", app.My.GetMyProfile).Methods(GET)
-	userRouter.HandleFunc("/profile", app.My.UpdateMyProfile).Methods(PUT)
-	userRouter.HandleFunc("/avatar", app.My.UpdateMyAvatar).Methods(PUT)
+	adminUserRouter := r.PathPrefix("/users").Subrouter()
+	adminUserRouter.HandleFunc("/{userId}/reset-password", app.User.ResetUserPassword).Methods(PATCH)
+	adminUserRouter.HandleFunc("/{userId}/disable", app.User.UpdateUserStatus).Methods(PATCH)
+	adminUserRouter.HandleFunc("/{userId}/active", app.User.UpdateUserStatus).Methods(PATCH)
+	adminUserRouter.Use(internalMid.AdminAuthenticate)
+
+	adminPostRouter := r.PathPrefix("/posts").Subrouter()
+	adminPostRouter.HandleFunc("/{postId}/verify", app.Post.UpdatePostStatus).Methods(PATCH)
+	adminPostRouter.HandleFunc("/{postId}/active", app.Post.UpdatePostStatus).Methods(PATCH)
+	adminPostRouter.HandleFunc("/{postId}/disable", app.Post.UpdatePostStatus).Methods(PATCH)
+	adminPostRouter.Use(internalMid.AdminAuthenticate)
+
+	myRouter := r.PathPrefix("/my").Subrouter()
+	myRouter.HandleFunc("/liked-posts", app.My.GetMyPostLiked).Methods(GET)
+	myRouter.HandleFunc("/posts", app.My.GetMyPosts).Methods(GET)
+	myRouter.HandleFunc("/posts/{code}", app.Post.UpdatePost).Methods(PUT)
+	myRouter.HandleFunc("/password", app.User.UpdatePassword).Methods(PATCH)
+	myRouter.HandleFunc("/profile", app.My.GetMyProfile).Methods(GET)
+	myRouter.HandleFunc("/profile", app.My.UpdateMyProfile).Methods(PUT)
+	myRouter.HandleFunc("/avatar", app.My.UpdateMyAvatar).Methods(PUT)
+	myRouter.Use(internalMid.Authenticate)
+
+	userRouter := r.PathPrefix("/users").Subrouter()
+	userRouter.HandleFunc("/{userId}", app.User.GetUserProfile).Methods(GET)
 	userRouter.Use(internalMid.Authenticate)
 
 	hostelRouter := r.PathPrefix("/posts").Subrouter()

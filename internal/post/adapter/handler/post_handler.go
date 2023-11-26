@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"path"
 	"strconv"
 
 	"github.com/go-playground/validator/v10"
@@ -245,6 +246,31 @@ func (h *HttpPostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 			Data: post,
 		})
 	}
+}
+
+func (h *HttpPostHandler) UpdatePostStatus(w http.ResponseWriter, r *http.Request) {
+	postId := mux.Vars(r)["postId"]
+	if len(postId) == 0 {
+		util.Json(w, http.StatusBadRequest, util.Response{
+			Status: util.ErrorCodeEmpty.Error(),
+		})
+		return
+	}
+	status := ""
+	switch path.Base(r.URL.Path) {
+	case "disable":
+		status = "I"
+	case "active":
+		status = "A"
+	case "verify":
+		status = "V"
+	}
+	_, err := h.service.UpdatePostStatus(r.Context(), postId, status)
+	if err != nil {
+		util.Json(w, http.StatusInternalServerError, util.Response{Status: err.Error()})
+		return
+	}
+	util.JsonOK(w)
 }
 
 func (h *HttpPostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {

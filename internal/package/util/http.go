@@ -26,7 +26,7 @@ func Json(w http.ResponseWriter, code int, res interface{}) error {
 
 func JsonOK(w http.ResponseWriter, data ...interface{}) error {
 	if data != nil {
-		return Json(w, http.StatusOK, Response{Data: data[0]})
+		return Json(w, http.StatusOK, Response{Data: data[0], Total: data[1].(int64)})
 	}
 	return Json(w, http.StatusOK, Response{Status: Success})
 }

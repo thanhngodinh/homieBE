@@ -28,6 +28,19 @@ type User struct {
 	UpdatedBy       string         `json:"updatedBy,omitempty" gorm:"colum:updated_by"`
 }
 
+type UserProfile struct {
+	Id              string     `json:"id" gorm:"column:id;primary_key"`
+	Username        string     `json:"username" gorm:"column:username"`
+	Phone           string     `json:"phone,omitempty" gorm:"column:phone"`
+	Email           string     `json:"email,omitempty" gorm:"column:email"`
+	IsEmailVerified string     `json:"isVerifiedEmail,omitempty" gorm:"column:is_verified_email"`
+	IsFindRoommate  *bool      `json:"isFindRoommate,omitempty" gorm:"column:is_find_roommate;default:true"`
+	DateOfBirth     *time.Time `json:"dateOfBirth,omitempty" gorm:"column:date_of_birth"`
+	Avatar          string     `json:"avatar,omitempty" gorm:"column:avatar_url"`
+	Gender          string     `json:"gender,omitempty" gorm:"column:gender"`
+	Name            string     `json:"name,omitempty" gorm:"column:display_name"`
+}
+
 type UpdateMyProfileReq struct {
 	Id            string         `json:"-" gorm:"column:id;primary_key"`
 	Phone         string         `json:"phone,omitempty" gorm:"column:phone"`

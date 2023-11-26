@@ -22,7 +22,7 @@ func PublicAuth(next http.Handler) http.Handler {
 			splitedTokenStr[1],
 			&jwt.StandardClaims{},
 			func(t *jwt.Token) (interface{}, error) {
-				return domain.SECRET_KEY, nil
+				return domain.USER_SECRET_KEY, nil
 			},
 		)
 		if err != nil {

@@ -49,6 +49,12 @@ func (r *UserRepo) SearchRoommates(ctx context.Context, filter *domain.RoommateF
 	return roommates, total, res2.Error
 }
 
+func (r *UserRepo) GetUserProfile(ctx context.Context, userId string) (*domain.UserProfile, error) {
+	res := &domain.UserProfile{}
+	r.DB.Table("users").Where("id = ?", userId).First(res)
+	return res, nil
+}
+
 func (r *UserRepo) GetRoommateById(ctx context.Context, userId string) (*domain.Roommate, error) {
 	roommate := &domain.Roommate{}
 	res := r.DB.Table("users").Where("id = ?", userId).First(roommate)
@@ -74,9 +80,9 @@ func (r *UserRepo) GetUserSuggest(ctx context.Context, userId string) (*domain.U
 	return user, res.Error
 }
 
-func (r *UserRepo) GetByUsername(ctx context.Context, username string) (*domain.User, error) {
-	user := &domain.User{}
-	res := r.DB.Where("username = ?", username).First(user)
+func (r *UserRepo) GetByUsername(ctx context.Context, username string) (*domain.UserProfile, error) {
+	user := &domain.UserProfile{}
+	res := r.DB.Table("users").Where("username = ?", username).First(user)
 	return user, res.Error
 }
 
@@ -93,5 +99,10 @@ func (r *UserRepo) Create(ctx context.Context, user *domain.User) error {
 
 func (r *UserRepo) UpdatePassword(ctx context.Context, userId string, newPassword string) error {
 	res := r.DB.Table("users").Where("id = ?", userId).Updates(map[string]interface{}{"password": newPassword})
+	return res.Error
+}
+
+func (r *UserRepo) UpdateUserStatus(ctx context.Context, userId string, status string) error {
+	res := r.DB.Table("users").Where("id = ?", userId).Updates(map[string]interface{}{"satus": status})
 	return res.Error
 }

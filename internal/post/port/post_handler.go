@@ -11,5 +11,6 @@ type PostHandler interface {
 	GetCompare(w http.ResponseWriter, r *http.Request)
 	CreatePost(w http.ResponseWriter, r *http.Request)
 	UpdatePost(w http.ResponseWriter, r *http.Request)
+	UpdatePostStatus(w http.ResponseWriter, r *http.Request)
 	DeletePost(w http.ResponseWriter, r *http.Request)
 }

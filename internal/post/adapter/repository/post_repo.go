@@ -142,6 +142,11 @@ func (r *PostAdapter) UpdatePost(ctx context.Context, post *domain.Post) (int64,
 	return res.RowsAffected, res.Error
 }
 
+func (r *PostAdapter) UpdatePostStatus(ctx context.Context, userId string, status string) (int64, error) {
+	res := r.DB.Table("posts").Where("id = ?", userId).Updates(map[string]interface{}{"satus": status})
+	return res.RowsAffected, res.Error
+}
+
 func (r *PostAdapter) DeletePost(ctx context.Context, post *domain.Post) (int64, error) {
 	res := r.DB.Table("posts").Delete(post)
 	return res.RowsAffected, res.Error

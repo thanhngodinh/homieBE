@@ -12,6 +12,7 @@ require (
 	github.com/gorilla/websocket v1.5.0
 	github.com/lib/pq v1.10.9
 	github.com/rs/cors v1.10.0
+	github.com/sfreiberg/gotwilio v1.0.0
 	github.com/sirupsen/logrus v1.9.0
 	golang.org/x/crypto v0.8.0
 	gorm.io/driver/postgres v1.5.2
@@ -24,6 +25,8 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/google/go-querystring v1.0.0 // indirect
+	github.com/gorilla/schema v1.1.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect

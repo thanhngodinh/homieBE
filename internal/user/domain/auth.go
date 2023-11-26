@@ -1,6 +1,6 @@
 package domain
 
-var SECRET_KEY = []byte("secret")
+var USER_SECRET_KEY = []byte("user_key")
 
 type LoginRequest struct {
 	Username string `json:"username"`
@@ -8,13 +8,8 @@ type LoginRequest struct {
 }
 
 type LoginResponse struct {
-	Token   string   `json:"token"`
-	Profile *Profile `json:"profile"`
-}
-
-type Profile struct {
-	Name   string `json:"name"`
-	Avatar string `json:"avatar,omitempty"`
+	Token   string       `json:"token"`
+	Profile *UserProfile `json:"profile"`
 }
 
 type UpdatePasswordRequest struct {

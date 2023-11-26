@@ -17,8 +17,8 @@ type MyAdapter struct {
 	DB *gorm.DB
 }
 
-func (r *MyAdapter) GetMyProfile(ctx context.Context, userId string) (*domain.User, error) {
-	res := &domain.User{}
+func (r *MyAdapter) GetMyProfile(ctx context.Context, userId string) (*domain.UserProfile, error) {
+	res := &domain.UserProfile{}
 	r.DB.Table("users").Where("id = ?", userId).First(res)
 	return res, nil
 }
