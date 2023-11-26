@@ -5,6 +5,7 @@ import (
 	"fmt"
 	post_domain "hostel-service/internal/post/domain"
 	"hostel-service/internal/user/domain"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -92,17 +93,27 @@ func (r *UserRepo) GetById(ctx context.Context, userId string) (*domain.User, er
 	return user, res.Error
 }
 
-func (r *UserRepo) Create(ctx context.Context, user *domain.User) error {
-	res := r.DB.Create(user)
+func (r *UserRepo) Create(ctx context.Context, user *domain.CreateUser) error {
+	res := r.DB.Table("users").Create(user)
 	return res.Error
 }
 
 func (r *UserRepo) UpdatePassword(ctx context.Context, userId string, newPassword string) error {
-	res := r.DB.Table("users").Where("id = ?", userId).Updates(map[string]interface{}{"password": newPassword})
+	res := r.DB.Table("users").Where("id = ?", userId).Updates(map[string]interface{}{"password": newPassword, "is_verified_email": true})
 	return res.Error
 }
 
 func (r *UserRepo) UpdateUserStatus(ctx context.Context, userId string, status string) error {
-	res := r.DB.Table("users").Where("id = ?", userId).Updates(map[string]interface{}{"satus": status})
+	res := r.DB.Table("users").Where("id = ?", userId).Updates(map[string]interface{}{"status": status})
+	return res.Error
+}
+
+func (r *UserRepo) VerifyPhone(ctx context.Context, userId string, phone string, otp string, expirationTime time.Time) error {
+	res := r.DB.Table("users").Where("id = ?", userId).Updates(map[string]interface{}{"phone": phone, "expiration_time": expirationTime, "otp": otp})
+	return res.Error
+}
+
+func (r *UserRepo) VerifyPhoneOTP(ctx context.Context, userId string, otp string) error {
+	res := r.DB.Table("users").Where("id = ?", userId).Updates(map[string]interface{}{"is_verified_phone": true})
 	return res.Error
 }

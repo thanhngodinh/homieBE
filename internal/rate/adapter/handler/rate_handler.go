@@ -8,9 +8,9 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 
-	"hostel-service/internal/package/util"
 	"hostel-service/internal/rate/domain"
 	"hostel-service/internal/rate/service"
+	"hostel-service/package/util"
 )
 
 func NewRateHandler(

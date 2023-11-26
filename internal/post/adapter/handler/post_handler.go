@@ -11,9 +11,9 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 
-	"hostel-service/internal/package/util"
 	"hostel-service/internal/post/domain"
 	"hostel-service/internal/post/service"
+	"hostel-service/package/util"
 )
 
 func NewPostHandler(
@@ -144,9 +144,7 @@ func (h *HttpPostHandler) GetSuggestPosts(w http.ResponseWriter, r *http.Request
 func (h *HttpPostHandler) GetPostById(w http.ResponseWriter, r *http.Request) {
 	code := mux.Vars(r)["code"]
 	if len(code) == 0 {
-		util.Json(w, http.StatusBadRequest, util.Response{
-			Status: util.ErrorCodeEmpty.Error(),
-		})
+		util.JsonBadRequest(w, util.ErrorCodeEmpty)
 		return
 	}
 	userId := r.Context().Value("userId").(string)
@@ -164,9 +162,7 @@ func (h *HttpPostHandler) GetCompare(w http.ResponseWriter, r *http.Request) {
 	post1 := mux.Vars(r)["post1"]
 	post2 := mux.Vars(r)["post2"]
 	if len(post1) == 0 || len(post2) == 0 {
-		util.Json(w, http.StatusBadRequest, util.Response{
-			Status: util.ErrorCodeEmpty.Error(),
-		})
+		util.JsonBadRequest(w, util.ErrorCodeEmpty)
 		return
 	}
 	userId := r.Context().Value("userId").(string)
@@ -219,9 +215,7 @@ func (h *HttpPostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	}
 	code := mux.Vars(r)["code"]
 	if len(code) == 0 {
-		util.Json(w, http.StatusBadRequest, util.Response{
-			Status: util.ErrorCodeEmpty.Error(),
-		})
+		util.JsonBadRequest(w, util.ErrorCodeEmpty)
 		return
 	}
 	if len(post.Id) == 0 {
@@ -251,9 +245,7 @@ func (h *HttpPostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 func (h *HttpPostHandler) UpdatePostStatus(w http.ResponseWriter, r *http.Request) {
 	postId := mux.Vars(r)["postId"]
 	if len(postId) == 0 {
-		util.Json(w, http.StatusBadRequest, util.Response{
-			Status: util.ErrorCodeEmpty.Error(),
-		})
+		util.JsonBadRequest(w, util.ErrorCodeEmpty)
 		return
 	}
 	status := ""
@@ -267,7 +259,7 @@ func (h *HttpPostHandler) UpdatePostStatus(w http.ResponseWriter, r *http.Reques
 	}
 	_, err := h.service.UpdatePostStatus(r.Context(), postId, status)
 	if err != nil {
-		util.Json(w, http.StatusInternalServerError, util.Response{Status: err.Error()})
+		util.JsonInternalError(w, err)
 		return
 	}
 	util.JsonOK(w)
@@ -276,9 +268,7 @@ func (h *HttpPostHandler) UpdatePostStatus(w http.ResponseWriter, r *http.Reques
 func (h *HttpPostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	code := mux.Vars(r)["code"]
 	if len(code) == 0 {
-		util.Json(w, http.StatusBadRequest, util.Response{
-			Status: util.ErrorCodeEmpty.Error(),
-		})
+		util.JsonBadRequest(w, util.ErrorCodeEmpty)
 		return
 	}
 	res, err := h.service.DeletePost(r.Context(), code)

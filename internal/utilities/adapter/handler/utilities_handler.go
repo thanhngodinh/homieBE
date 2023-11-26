@@ -9,9 +9,9 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 
-	"hostel-service/internal/package/util"
 	"hostel-service/internal/utilities/domain"
 	"hostel-service/internal/utilities/service"
+	"hostel-service/package/util"
 )
 
 func NewUtilitiesHandler(
@@ -77,9 +77,7 @@ func (h *HttpUtilitiesHandler) UpdateUtilities(w http.ResponseWriter, r *http.Re
 	}
 	code := mux.Vars(r)["id"]
 	if len(code) == 0 {
-		util.Json(w, http.StatusBadRequest, util.Response{
-			Status: util.ErrorCodeEmpty.Error(),
-		})
+		util.JsonBadRequest(w, util.ErrorCodeEmpty)
 		return
 	}
 	if len(utilities.Id) == 0 {
@@ -109,9 +107,7 @@ func (h *HttpUtilitiesHandler) UpdateUtilities(w http.ResponseWriter, r *http.Re
 func (h *HttpUtilitiesHandler) DeleteUtilities(w http.ResponseWriter, r *http.Request) {
 	code := mux.Vars(r)["id"]
 	if len(code) == 0 {
-		util.Json(w, http.StatusBadRequest, util.Response{
-			Status: util.ErrorCodeEmpty.Error(),
-		})
+		util.JsonBadRequest(w, util.ErrorCodeEmpty)
 		return
 	}
 	res, err := h.service.DeleteUtilities(r.Context(), code)

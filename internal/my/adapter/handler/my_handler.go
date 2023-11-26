@@ -10,7 +10,7 @@ import (
 
 	"hostel-service/internal/my/domain"
 	"hostel-service/internal/my/service"
-	"hostel-service/internal/package/util"
+	"hostel-service/package/util"
 )
 
 func NewMyHandler(service service.MyService, validate *validator.Validate) *HttpMyHandler {
@@ -27,12 +27,8 @@ func (h *HttpMyHandler) GetMyPostLiked(w http.ResponseWriter, r *http.Request) {
 	res, total, err := h.service.GetMyPostLiked(r.Context(), userId)
 	if err != nil {
 		util.JsonInternalError(w, err)
-	} else {
-		util.Json(w, http.StatusOK, util.Response{
-			Data:  res,
-			Total: total,
-		})
 	}
+	util.JsonOK(w, res, total)
 }
 
 func (h *HttpMyHandler) GetMyPosts(w http.ResponseWriter, r *http.Request) {
@@ -42,12 +38,8 @@ func (h *HttpMyHandler) GetMyPosts(w http.ResponseWriter, r *http.Request) {
 		util.Json(w, http.StatusInternalServerError, util.Response{
 			Status: err.Error(),
 		})
-	} else {
-		util.Json(w, http.StatusOK, util.Response{
-			Data:  res,
-			Total: total,
-		})
 	}
+	util.JsonOK(w, res, total)
 }
 
 func (h *HttpMyHandler) GetMyProfile(w http.ResponseWriter, r *http.Request) {
@@ -65,9 +57,7 @@ func (h *HttpMyHandler) UpdateMyProfile(w http.ResponseWriter, r *http.Request) 
 	err := json.NewDecoder(r.Body).Decode(&user)
 	defer r.Body.Close()
 	if err != nil {
-		util.Json(w, http.StatusBadRequest, util.Response{
-			Status: err.Error(),
-		})
+		util.JsonBadRequest(w, err)
 		return
 	}
 	user.Id = r.Context().Value("userId").(string)

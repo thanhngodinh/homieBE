@@ -1,4 +1,4 @@
-package send_email
+package send_otp
 
 import (
 	"fmt"
@@ -11,16 +11,16 @@ import (
 
 const (
 	accountSid   = "AC7729892a1c8f8af9cc45b5a7cbc9af9b"
-	authToken    = "87f997e2aaa2f20228dd943e951aac07"
+	authToken    = "ee47313e4e1c562eb1554404c2c73fa7"
 	twilioNumber = "+14849914441"
 )
 
-func generateOTP() string {
+func GenerateOTP() string {
 	rand.Seed(time.Now().UnixNano())
 	return fmt.Sprintf("%06d", rand.Intn(1000000))
 }
 
-func sendOTP(phoneNumber, otp string) error {
+func SendOTP(phoneNumber, otp string) error {
 	twilio := gotwilio.NewTwilioClient(accountSid, authToken)
 
 	message := "Your Homie OTP is: " + otp

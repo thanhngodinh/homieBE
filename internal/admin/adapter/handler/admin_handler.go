@@ -12,7 +12,7 @@ import (
 
 	"hostel-service/internal/admin/domain"
 	"hostel-service/internal/admin/service"
-	"hostel-service/internal/package/util"
+	"hostel-service/package/util"
 )
 
 func NewAdminHandler(
@@ -35,9 +35,7 @@ func (h *HttpAdminHandler) Login(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(credentials)
 	defer r.Body.Close()
 	if err != nil {
-		util.Json(w, http.StatusBadRequest, util.Response{
-			Status: err.Error(),
-		})
+		util.JsonBadRequest(w, err)
 		return
 	}
 
@@ -76,14 +74,12 @@ func (h *HttpAdminHandler) UpdatePassword(w http.ResponseWriter, r *http.Request
 	err := json.NewDecoder(r.Body).Decode(req)
 	defer r.Body.Close()
 	if err != nil {
-		util.Json(w, http.StatusBadRequest, util.Response{
-			Status: err.Error(),
-		})
+		util.JsonBadRequest(w, err)
 		return
 	}
 	err = h.service.UpdatePassword(r.Context(), adminId, req.OldPassword, req.NewPassword)
 	if err != nil {
-		util.Json(w, http.StatusInternalServerError, util.Response{Status: err.Error()})
+		util.JsonInternalError(w, err)
 		return
 	}
 	util.JsonOK(w)

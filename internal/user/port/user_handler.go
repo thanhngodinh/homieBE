@@ -11,4 +11,6 @@ type UserHandler interface {
 	ResetUserPassword(w http.ResponseWriter, r *http.Request)
 	SearchRoommates(w http.ResponseWriter, r *http.Request)
 	GetRoommateById(w http.ResponseWriter, r *http.Request)
+	VerifyPhone(w http.ResponseWriter, r *http.Request)
+	VerifyPhoneOTP(w http.ResponseWriter, r *http.Request)
 }

@@ -2,20 +2,15 @@ package handler
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 	"path"
-	"time"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/golang-jwt/jwt"
-	"github.com/google/uuid"
 	"github.com/gorilla/mux"
-	"golang.org/x/crypto/bcrypt"
 
-	"hostel-service/internal/package/util"
 	"hostel-service/internal/user/domain"
 	"hostel-service/internal/user/service"
+	"hostel-service/package/util"
 )
 
 func NewUserHandler(
@@ -34,67 +29,46 @@ type HttpUserHandler struct {
 }
 
 func (h *HttpUserHandler) Login(w http.ResponseWriter, r *http.Request) {
-	input := &domain.LoginRequest{}
+	input := &domain.LoginReq{}
 	err := json.NewDecoder(r.Body).Decode(input)
 	defer r.Body.Close()
 	if err != nil {
-		util.Json(w, http.StatusBadRequest, util.Response{
-			Status: err.Error(),
-		})
+		util.JsonBadRequest(w, err)
 		return
 	}
 
-	user, er2 := h.service.GetByUsername(r.Context(), input.Username)
-	if er2 != nil {
-		util.JsonInternalError(w, errors.New("internal server error"))
+	user, token, code, err := h.service.Login(r.Context(), input.Username, input.Password)
+	if code == -1 {
+		util.JsonInternalError(w, err)
+		return
+	} else if code == 0 {
+		util.JsonBadRequest(w, err, "Username or password is not match")
 		return
 	}
-	if user == nil || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password)) != nil {
-		util.Json(w, http.StatusNotFound, util.Response{
-			Status:  "user not match",
-			Message: "Username or password not match",
-		})
-		return
-	}
-	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
-		Audience:  user.Id,
-		ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
-	})
-	token, er3 := claims.SignedString(domain.USER_SECRET_KEY)
-	if er3 != nil {
-		util.JsonInternalError(w, errors.New("internal server error"))
-		return
-	}
-	res := domain.LoginResponse{
+
+	res := domain.LoginRes{
 		Token:   token,
 		Profile: user,
 	}
-	util.Json(w, http.StatusOK, res)
+	if code == 2 {
+		res.IsResetPass = true
+	}
 
+	util.JsonOK(w, res)
 }
 
 func (h *HttpUserHandler) Register(w http.ResponseWriter, r *http.Request) {
-	user := &domain.User{}
+	user := &domain.RegisterReq{}
 	err := json.NewDecoder(r.Body).Decode(user)
 	defer r.Body.Close()
 	if err != nil {
-		util.Json(w, http.StatusBadRequest, util.Response{
-			Status: err.Error(),
-		})
+		util.JsonBadRequest(w, err)
 		return
 	}
-	user.Id = uuid.New().String()
-	hashedPassword, er3 := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
-	if er3 != nil {
-		util.JsonInternalError(w, errors.New("internal server error"))
-		return
-	}
-	user.Password = string(hashedPassword)
-	now := time.Now()
-	user.CreatedAt = &now
-	err = h.service.Create(r.Context(), user)
+
+	err = h.service.Register(r.Context(), user.Username, user.Phone, user.Name)
 	if err != nil {
-		util.Json(w, http.StatusInternalServerError, util.Response{Status: err.Error()})
+		util.JsonInternalError(w, err)
 		return
 	}
 	util.JsonOK(w)
@@ -103,11 +77,10 @@ func (h *HttpUserHandler) Register(w http.ResponseWriter, r *http.Request) {
 func (h *HttpUserHandler) GetUserProfile(w http.ResponseWriter, r *http.Request) {
 	userId := mux.Vars(r)["userId"]
 	if len(userId) == 0 {
-		util.Json(w, http.StatusBadRequest, util.Response{
-			Status: util.ErrorCodeEmpty.Error(),
-		})
+		util.JsonBadRequest(w, util.ErrorCodeEmpty)
 		return
 	}
+
 	res, err := h.service.GetUserProfile(r.Context(), userId)
 	if err != nil {
 		util.JsonInternalError(w, err)
@@ -123,30 +96,24 @@ func (h *HttpUserHandler) SearchRoommates(w http.ResponseWriter, r *http.Request
 	err := json.NewDecoder(r.Body).Decode(filter)
 	defer r.Body.Close()
 	if err != nil {
-		util.Json(w, http.StatusBadRequest, util.Response{
-			Status: err.Error(),
-		})
+		util.JsonBadRequest(w, err)
 		return
 	}
+
 	res, total, err := h.service.SearchRoommates(r.Context(), filter)
 	if err != nil {
 		util.JsonInternalError(w, err)
-	} else {
-		util.Json(w, http.StatusOK, util.Response{
-			Data:  res,
-			Total: total,
-		})
 	}
+	util.JsonOK(w, res, total)
 }
 
 func (h *HttpUserHandler) GetRoommateById(w http.ResponseWriter, r *http.Request) {
 	userId := mux.Vars(r)["userId"]
 	if len(userId) == 0 {
-		util.Json(w, http.StatusBadRequest, util.Response{
-			Status: util.ErrorCodeEmpty.Error(),
-		})
+		util.JsonBadRequest(w, util.ErrorCodeEmpty)
 		return
 	}
+
 	user, err := h.service.GetRoommateById(r.Context(), userId)
 	if err != nil {
 		util.JsonInternalError(w, err)
@@ -160,9 +127,7 @@ func (h *HttpUserHandler) GetRoommateById(w http.ResponseWriter, r *http.Request
 func (h *HttpUserHandler) UpdateUserStatus(w http.ResponseWriter, r *http.Request) {
 	userId := mux.Vars(r)["userId"]
 	if len(userId) == 0 {
-		util.Json(w, http.StatusBadRequest, util.Response{
-			Status: util.ErrorCodeEmpty.Error(),
-		})
+		util.JsonBadRequest(w, util.ErrorCodeEmpty)
 		return
 	}
 	status := ""
@@ -172,28 +137,28 @@ func (h *HttpUserHandler) UpdateUserStatus(w http.ResponseWriter, r *http.Reques
 	case "active":
 		status = "A"
 	}
+
 	err := h.service.UpdateUserStatus(r.Context(), userId, status)
 	if err != nil {
-		util.Json(w, http.StatusInternalServerError, util.Response{Status: err.Error()})
+		util.JsonInternalError(w, err)
 		return
 	}
 	util.JsonOK(w)
 }
 
 func (h *HttpUserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
-	req := &domain.UpdatePasswordRequest{}
+	req := &domain.UpdatePasswordReq{}
 	userId := r.Context().Value("userId").(string)
 	err := json.NewDecoder(r.Body).Decode(req)
 	defer r.Body.Close()
 	if err != nil {
-		util.Json(w, http.StatusBadRequest, util.Response{
-			Status: err.Error(),
-		})
+		util.JsonBadRequest(w, err)
 		return
 	}
+
 	err = h.service.UpdatePassword(r.Context(), userId, req.OldPassword, req.NewPassword)
 	if err != nil {
-		util.Json(w, http.StatusInternalServerError, util.Response{Status: err.Error()})
+		util.JsonInternalError(w, err)
 		return
 	}
 	util.JsonOK(w)
@@ -202,14 +167,49 @@ func (h *HttpUserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request)
 func (h *HttpUserHandler) ResetUserPassword(w http.ResponseWriter, r *http.Request) {
 	userId := mux.Vars(r)["userId"]
 	if len(userId) == 0 {
-		util.Json(w, http.StatusBadRequest, util.Response{
-			Status: util.ErrorCodeEmpty.Error(),
-		})
+		util.JsonBadRequest(w, util.ErrorCodeEmpty)
 		return
 	}
+
 	err := h.service.ResetPassword(r.Context(), userId)
 	if err != nil {
-		util.Json(w, http.StatusInternalServerError, util.Response{Status: err.Error()})
+		util.JsonInternalError(w, err)
+		return
+	}
+	util.JsonOK(w)
+}
+
+func (h *HttpUserHandler) VerifyPhone(w http.ResponseWriter, r *http.Request) {
+	req := &domain.VerifyPhoneReq{}
+	err := json.NewDecoder(r.Body).Decode(req)
+	defer r.Body.Close()
+	if err != nil {
+		util.JsonBadRequest(w, err)
+		return
+	}
+	userId := r.Context().Value("userId").(string)
+
+	err = h.service.VerifyPhone(r.Context(), userId, req.Phone)
+	if err != nil {
+		util.JsonInternalError(w, err)
+		return
+	}
+	util.JsonOK(w)
+}
+
+func (h *HttpUserHandler) VerifyPhoneOTP(w http.ResponseWriter, r *http.Request) {
+	req := &domain.VerifyOTPReq{}
+	err := json.NewDecoder(r.Body).Decode(req)
+	defer r.Body.Close()
+	if err != nil {
+		util.JsonBadRequest(w, err)
+		return
+	}
+	userId := r.Context().Value("userId").(string)
+
+	err = h.service.VerifyPhoneOTP(r.Context(), userId, req.OTP)
+	if err != nil {
+		util.JsonInternalError(w, err)
 		return
 	}
 	util.JsonOK(w)

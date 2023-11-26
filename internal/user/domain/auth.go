@@ -2,17 +2,32 @@ package domain
 
 var USER_SECRET_KEY = []byte("user_key")
 
-type LoginRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+type LoginReq struct {
+	Username string `json:"username,omitempty"`
+	Password string `json:"password,omitempty"`
 }
 
-type LoginResponse struct {
-	Token   string       `json:"token"`
-	Profile *UserProfile `json:"profile"`
+type LoginRes struct {
+	IsResetPass bool         `json:"iResetPass,omitempty"`
+	Token       string       `json:"token,omitempty"`
+	Profile     *UserProfile `json:"profile,omitempty"`
 }
 
-type UpdatePasswordRequest struct {
-	OldPassword string `json:"oldPassword"`
-	NewPassword string `json:"newPassword"`
+type UpdatePasswordReq struct {
+	OldPassword string `json:"oldPassword,omitempty"`
+	NewPassword string `json:"newPassword,omitempty"`
+}
+
+type RegisterReq struct {
+	Username string `json:"username,omitempty"`
+	Phone    string `json:"phone,omitempty"`
+	Name     string `json:"name,omitempty"`
+}
+
+type VerifyPhoneReq struct {
+	Phone string `json:"phone,omitempty"`
+}
+
+type VerifyOTPReq struct {
+	OTP string `json:"otp,omitempty"`
 }

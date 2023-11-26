@@ -3,25 +3,31 @@ package service
 import (
 	"context"
 	"errors"
-	send_email "hostel-service/internal/package/sendEmail"
 	"hostel-service/internal/user/domain"
 	"hostel-service/internal/user/port"
+	"hostel-service/package/send_email"
+	"hostel-service/package/send_otp"
+	"time"
 
+	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService interface {
-	UpdateUserSuggest(ctx context.Context, userUpdate *domain.UpdateUserSuggest) error
-	GetUserProfile(ctx context.Context, userId string) (*domain.UserProfile, error)
-	GetUserSuggest(ctx context.Context, userId string) (*domain.UserSuggest, error)
-	GetByUsername(ctx context.Context, username string) (*domain.UserProfile, error)
-	UpdatePassword(ctx context.Context, userId string, oldPassword string, newPassword string) error
-	ResetPassword(ctx context.Context, userId string) error
-	UpdateUserStatus(ctx context.Context, userId string, status string) error
-	Create(ctx context.Context, user *domain.User) error
+	Login(ctx context.Context, username string, password string) (*domain.UserProfile, string, int, error)
+	Register(ctx context.Context, username string, phone string, name string) error
 	SearchRoommates(ctx context.Context, filter *domain.RoommateFilter) ([]domain.Roommate, int64, error)
 	GetRoommateById(ctx context.Context, userId string) (*domain.Roommate, error)
+	GetUserProfile(ctx context.Context, userId string) (*domain.UserProfile, error)
+	GetByUsername(ctx context.Context, username string) (*domain.UserProfile, error)
+	GetUserSuggest(ctx context.Context, userId string) (*domain.UserSuggest, error)
+	UpdateUserStatus(ctx context.Context, userId string, status string) error
+	UpdateUserSuggest(ctx context.Context, userUpdate *domain.UpdateUserSuggest) error
+	UpdatePassword(ctx context.Context, userId string, oldPassword string, newPassword string) error
+	ResetPassword(ctx context.Context, userId string) error
+	VerifyPhone(ctx context.Context, userId string, phone string) error
+	VerifyPhoneOTP(ctx context.Context, userId string, otp string) error
 }
 
 func NewUserService(
@@ -64,7 +70,61 @@ func (s *userService) GetById(ctx context.Context, id string) (*domain.User, err
 	return s.userRepo.GetById(ctx, id)
 }
 
-func (s *userService) Create(ctx context.Context, user *domain.User) error {
+func (s *userService) Login(ctx context.Context, username string, password string) (*domain.UserProfile, string, int, error) {
+	user, err := s.GetByUsername(ctx, username)
+	if err != nil {
+		return nil, "", 0, errors.New("Not found user. Error: " + err.Error())
+	}
+
+	if password == "" || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
+		return nil, "", 0, errors.New("password not match")
+	}
+
+	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
+		Audience:  user.Id,
+		ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
+	})
+	token, err := claims.SignedString(domain.USER_SECRET_KEY)
+	if err != nil {
+		return nil, "", -1, err
+	}
+
+	if user.IsVerifiedEmail == nil || !*user.IsVerifiedEmail {
+		return user, token, 2, nil
+	}
+
+	return user, token, 1, nil
+
+}
+
+func (s *userService) Register(ctx context.Context, username string, phone string, name string) error {
+	now := time.Now()
+	f := false
+	userId := "user-" + uuid.NewString()
+	user := &domain.CreateUser{
+		Id:              userId,
+		Username:        username,
+		Email:           username,
+		Phone:           phone,
+		Name:            name,
+		IsVerifiedEmail: &f,
+		IsVerifiedPhone: &f,
+		CreatedAt:       &now,
+		CreatedBy:       userId,
+	}
+
+	password := uuid.New().String()[0:8]
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	user.Password = string(hashedPassword)
+
+	err = send_email.SendVerifyEmail(username, password)
+	if err != nil {
+		return err
+	}
+
 	return s.userRepo.Create(ctx, user)
 }
 
@@ -105,4 +165,32 @@ func (s *userService) ResetPassword(ctx context.Context, userId string) error {
 
 func (s *userService) UpdateUserStatus(ctx context.Context, userId string, status string) error {
 	return s.userRepo.UpdateUserStatus(ctx, userId, status)
+}
+
+func (s *userService) VerifyPhone(ctx context.Context, userId string, phone string) error {
+	expirationTime := time.Now().Add(2 * time.Minute)
+	otp := send_otp.GenerateOTP()
+
+	err := send_otp.SendOTP("+84" + phone, otp)
+	if err != nil {
+		return err
+	}
+
+	return s.userRepo.VerifyPhone(ctx, userId, phone, otp, expirationTime)
+}
+
+func (s *userService) VerifyPhoneOTP(ctx context.Context, userId string, otp string) error {
+	user, err := s.userRepo.GetById(ctx, userId)
+	if err != nil {
+		return err
+	}
+	if user.ExpirationTime == nil || user.OTP == "" {
+		return errors.New("Can't process verify")
+	}
+
+	if otp != user.OTP || time.Now().After(*user.ExpirationTime) {
+		return errors.New("OTP is invalid")
+	}
+
+	return s.userRepo.VerifyPhoneOTP(ctx, userId, otp)
 }

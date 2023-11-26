@@ -1,16 +1,17 @@
 CREATE TYPE gender AS ENUM ('Nam', 'Nữ', 'Nam hoặc Nữ');
-CREATE TYPE verify AS ENUM ('V', 'N');
 
 CREATE TABLE "users" (
-  "id" varchar(40) PRIMARY KEY,
+  "id" varchar(50) PRIMARY KEY,
   "username" varchar(100) NOT NULL,
   "password" varchar(100) NOT NULL,
   "phone" varchar(20) default '',
   "email" varchar(100) NOT NULL,
-  "is_verified_email" verify default 'N',
-  "is_verified_phone" verify default 'N',
-  "is_find_roommate" boolean default false,
   "avatar_url" varchar(500) default 'https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/default-avatar.png',
+  "is_verified_email" boolean default false,
+  "is_verified_phone" boolean default false,
+  "otp" varchar(10) default '',
+  "expiration_time" timestamptz,
+  "is_find_roommate" boolean default false,
   "display_name" varchar(100) default '',
   "gender" gender default 'Nam hoặc Nữ',
   "date_of_birth" timestamptz,
@@ -48,7 +49,7 @@ CREATE TYPE hostel_types AS ENUM ('Ký túc xá', 'Phòng cho thuê', 'Nhà nguy
 CREATE TYPE post_status AS ENUM ('W', 'A', 'I', 'V');
 
 CREATE TABLE "posts" (
-  "id" varchar(40) PRIMARY KEY,
+  "id" varchar(50) PRIMARY KEY,
   "name" varchar(100) NOT NULL,
   "province" varchar(40) NOT NULL,
   "district" varchar(40) NOT NULL,
@@ -79,7 +80,7 @@ CREATE TABLE "posts" (
 );
 
 CREATE TABLE post_utilities (
-  "post_id" VARCHAR(40) NOT NULL,
+  "post_id" VARCHAR(50) NOT NULL,
 	"utility_id" VARCHAR(40) NOT NULL,
   primary key (post_id, utility_id)
 );
@@ -96,14 +97,14 @@ CREATE TABLE utilities (
 );
 
 CREATE TABLE "user_like_posts" (
-  "user_id" varchar(40),
-  "post_id" varchar(40),
+  "user_id" varchar(50),
+  "post_id" varchar(50),
   primary key (user_id, post_id)
 );
 
 CREATE TABLE "rates" (
-  "user_id" varchar(40) NOT NULL,
-  "post_id" varchar(40) NOT NULL,
+  "user_id" varchar(50) NOT NULL,
+  "post_id" varchar(50) NOT NULL,
   "star" int NOT NULL,
   "comment" text default '',
   "created_at" timestamptz default (current_timestamp),
@@ -114,7 +115,7 @@ CREATE TABLE "rates" (
 
 CREATE TABLE "post_rate_info" (
   "id" bigserial PRIMARY KEY,
-  "post_id" varchar(40) NOT NULL UNIQUE,
+  "post_id" varchar(50) NOT NULL UNIQUE,
   "total" int NOT NULL default 0,
   "star1" int NOT NULL default 0,
   "star2" int NOT NULL default 0,

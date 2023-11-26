@@ -8,7 +8,7 @@ import (
 	"github.com/golang-jwt/jwt"
 
 	"hostel-service/internal/admin/domain"
-	"hostel-service/internal/package/util"
+	"hostel-service/package/util"
 )
 
 func AdminAuthenticate(next http.Handler) http.Handler {
