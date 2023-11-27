@@ -5,8 +5,8 @@ import (
 	"errors"
 	"hostel-service/internal/user/domain"
 	"hostel-service/internal/user/port"
-	"hostel-service/package/send_email"
-	"hostel-service/package/send_otp"
+	"hostel-service/pkg/send_email"
+	"hostel-service/pkg/send_otp"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -171,7 +171,7 @@ func (s *userService) VerifyPhone(ctx context.Context, userId string, phone stri
 	expirationTime := time.Now().Add(2 * time.Minute)
 	otp := send_otp.GenerateOTP()
 
-	err := send_otp.SendOTP("+84" + phone, otp)
+	err := send_otp.SendOTP("+84"+phone, otp)
 	if err != nil {
 		return err
 	}

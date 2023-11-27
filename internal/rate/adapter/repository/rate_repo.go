@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"hostel-service/internal/rate/domain"
-	"hostel-service/package/util"
+	"hostel-service/pkg/util"
 
 	"gorm.io/gorm"
 )

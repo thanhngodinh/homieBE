@@ -10,7 +10,7 @@ import (
 
 	"hostel-service/internal/rate/domain"
 	"hostel-service/internal/rate/service"
-	"hostel-service/package/util"
+	"hostel-service/pkg/util"
 )
 
 func NewRateHandler(

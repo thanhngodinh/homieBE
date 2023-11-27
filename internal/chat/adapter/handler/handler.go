@@ -3,7 +3,7 @@ package handler
 import (
 	"hostel-service/internal/chat/port"
 	"hostel-service/internal/chat/service"
-	wspkg "hostel-service/package/websocket"
+	wspkg "hostel-service/pkg/websocket"
 	"log"
 	"net/http"
 )

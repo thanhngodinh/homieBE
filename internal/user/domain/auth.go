@@ -8,7 +8,7 @@ type LoginReq struct {
 }
 
 type LoginRes struct {
-	IsResetPass bool         `json:"iResetPass,omitempty"`
+	IsResetPass bool         `json:"isResetPass,omitempty"`
 	Token       string       `json:"token,omitempty"`
 	Profile     *UserProfile `json:"profile,omitempty"`
 }

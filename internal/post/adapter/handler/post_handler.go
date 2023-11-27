@@ -13,7 +13,7 @@ import (
 
 	"hostel-service/internal/post/domain"
 	"hostel-service/internal/post/service"
-	"hostel-service/package/util"
+	"hostel-service/pkg/util"
 )
 
 func NewPostHandler(

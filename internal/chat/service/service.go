@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"hostel-service/internal/chat/adapter/repo"
 	"hostel-service/internal/chat/domain"
-	wspkg "hostel-service/package/websocket"
+	wspkg "hostel-service/pkg/websocket"
 	"log"
 
 	"github.com/gorilla/websocket"

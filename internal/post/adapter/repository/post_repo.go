@@ -92,7 +92,7 @@ func (r *PostAdapter) GetPostById(ctx context.Context, id string) (*domain.Post,
 
 	r.DB.Table("posts").
 		Select(`posts.*,
-		users.display_name as author, users.avatar_url as author_avatar,
+		users.id as author_id, users.display_name as author_name, users.avatar_url as author_avatar,
 		array_remove(array_agg(post_utilities.utility_id), NULL) as utilities`).
 		Joins("join users on users.id = posts.created_by").
 		Joins("join post_utilities on post_utilities.post_id = posts.id").

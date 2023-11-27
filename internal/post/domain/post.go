@@ -39,7 +39,10 @@ type Post struct {
 	IsLiked          bool                      `json:"isLiked" gorm:"is_liked;->"`
 	View             int                       `json:"-" gorm:"column:view"`
 	Description      string                    `json:"description,omitempty" gorm:"column:description"`
-	Author           string                    `json:"author" gorm:"column:author;->"`
+	Latitude         string                    `json:"latitude,omitempty" gorm:"column:latitude"`
+	Longitude        string                    `json:"longitude,omitempty" gorm:"column:longitude"`
+	AuthorId         string                    `json:"authorId" gorm:"column:author_id;->"`
+	AuthorName       string                    `json:"authorName" gorm:"column:author_name;->"`
 	AuthorAvatar     string                    `json:"authorAvatar" gorm:"column:author_avatar;->"`
 	RateInfo         *rate_domain.PostRateInfo `json:"rateInfo" gorm:"column:rate_info;->"`
 	CreatedAt        time.Time                 `json:"createdAt,omitempty" gorm:"colum:created_at"`

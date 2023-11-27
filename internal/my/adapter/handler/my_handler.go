@@ -10,7 +10,7 @@ import (
 
 	"hostel-service/internal/my/domain"
 	"hostel-service/internal/my/service"
-	"hostel-service/package/util"
+	"hostel-service/pkg/util"
 )
 
 func NewMyHandler(service service.MyService, validate *validator.Validate) *HttpMyHandler {

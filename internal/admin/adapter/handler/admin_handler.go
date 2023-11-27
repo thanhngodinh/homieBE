@@ -12,7 +12,7 @@ import (
 
 	"hostel-service/internal/admin/domain"
 	"hostel-service/internal/admin/service"
-	"hostel-service/package/util"
+	"hostel-service/pkg/util"
 )
 
 func NewAdminHandler(

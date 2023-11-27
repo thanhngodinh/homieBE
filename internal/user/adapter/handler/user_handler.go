@@ -10,7 +10,7 @@ import (
 
 	"hostel-service/internal/user/domain"
 	"hostel-service/internal/user/service"
-	"hostel-service/package/util"
+	"hostel-service/pkg/util"
 )
 
 func NewUserHandler(

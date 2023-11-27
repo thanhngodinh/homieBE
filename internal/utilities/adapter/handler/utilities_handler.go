@@ -11,7 +11,7 @@ import (
 
 	"hostel-service/internal/utilities/domain"
 	"hostel-service/internal/utilities/service"
-	"hostel-service/package/util"
+	"hostel-service/pkg/util"
 )
 
 func NewUtilitiesHandler(
