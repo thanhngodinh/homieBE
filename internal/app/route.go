@@ -57,6 +57,7 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 	hostelPublicRouter.HandleFunc("/suggest", app.Post.GetSuggestPosts).Methods(GET)
 	hostelPublicRouter.HandleFunc("/compare/{post1}/{post2}", app.Post.GetCompare).Methods(GET)
 	hostelPublicRouter.HandleFunc("/{code}", app.Post.GetPostById).Methods(GET)
+	hostelPublicRouter.HandleFunc("/check-create", app.Post.CheckCreatePost).Methods(POST)
 	hostelPublicRouter.Use(internalMid.PublicAuth)
 
 	rateRouter := r.PathPrefix("/rates").Subrouter()

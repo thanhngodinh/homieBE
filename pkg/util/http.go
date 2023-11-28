@@ -14,9 +14,9 @@ type Response struct {
 	Message string      `json:"message,omitempty"`
 }
 
-const Success = "Success"
-const BadRequest = "Bad Request"
-const InternalServerError = "Internal Server Error"
+const Success = "success"
+const BadRequest = "bad request"
+const InternalServerError = "internal server error"
 
 func Json(w http.ResponseWriter, code int, res interface{}) error {
 	w.Header().Set("Content-Type", "application/json")

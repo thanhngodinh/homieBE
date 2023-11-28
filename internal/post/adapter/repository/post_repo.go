@@ -94,8 +94,8 @@ func (r *PostAdapter) GetPostById(ctx context.Context, id string) (*domain.Post,
 		Select(`posts.*,
 		users.id as author_id, users.display_name as author_name, users.avatar_url as author_avatar,
 		array_remove(array_agg(post_utilities.utility_id), NULL) as utilities`).
-		Joins("join users on users.id = posts.created_by").
-		Joins("join post_utilities on post_utilities.post_id = posts.id").
+		Joins("left join users on users.id = posts.created_by").
+		Joins("left join post_utilities on post_utilities.post_id = posts.id").
 		Group("posts.id").Group("users.id").
 		Where("posts.id = ?", id).First(&post)
 	r.DB.Table("posts").Where("id = ?", id).Updates(map[string]interface{}{"view": post.View + 1})
@@ -108,7 +108,7 @@ func (r *PostAdapter) GetPostByIds(ctx context.Context, ids []string) ([]domain.
 	r.DB.Table("posts").
 		Select(`posts.*,
 		array_remove(array_agg(post_utilities.utility_id), NULL) as utilities`).
-		Joins("join post_utilities on post_utilities.post_id = posts.id").
+		Joins("left join post_utilities on post_utilities.post_id = posts.id").
 		Group("posts.id").
 		Where("posts.id = any(?)", pq.Array(ids)).Find(&post)
 	return post, nil

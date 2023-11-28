@@ -33,7 +33,8 @@ type UserProfile struct {
 	Username        string     `json:"username" gorm:"column:username"`
 	Phone           string     `json:"phone,omitempty" gorm:"column:phone"`
 	Email           string     `json:"email,omitempty" gorm:"column:email"`
-	IsEmailVerified string     `json:"isVerifiedEmail,omitempty" gorm:"column:is_verified_email"`
+	IsEmailVerified *bool      `json:"isVerifiedEmail,omitempty" gorm:"column:is_verified_email"`
+	IsEmailPhone    *bool      `json:"isVerifiedPhone,omitempty" gorm:"column:is_verified_phone"`
 	IsFindRoommate  *bool      `json:"isFindRoommate,omitempty" gorm:"column:is_find_roommate;default:true"`
 	DateOfBirth     *time.Time `json:"dateOfBirth,omitempty" gorm:"column:date_of_birth"`
 	Avatar          string     `json:"avatar,omitempty" gorm:"column:avatar_url"`

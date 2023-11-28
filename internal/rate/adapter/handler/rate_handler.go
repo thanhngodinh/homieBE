@@ -38,7 +38,7 @@ func (h *HttpRateHandler) GetPostRate(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		util.JsonInternalError(w, err)
 	} else {
-		util.Json(w, http.StatusOK, rate)
+		util.JsonOK(w, rate)
 	}
 }
 

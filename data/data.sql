@@ -23,7 +23,7 @@ insert into admins (id, username, phone, "password", email) values
 ('admin-00010', 'admin000010', '0987654320', '$2a$10$J4BEfdZT3rWL5lwcDOum6ugFvdTQ31zub0zJL2xMwvA3snH/KUCCy', 'admin00010@gmail.com');
 
 insert into posts (id, "name", province, district, ward, street, "type", "status", gender, cost, deposit, electricity_price, water_price, parking_price, service_price, capacity, area, created_by, "description", image_url, latitude, longitude) values
-('post-00001', 'Căn hộ dịch vụ Nơ trang long, Quận Bình Thạnh', 
+('post-00001', 'Căn hộ dịch vụ Nơ Trang Long, Quận Bình Thạnh', 
     'Thành phố Hồ Chí Minh', 'Quận Bình Thạnh', 'Phường 12', '482 Nơ Trang Long',
     'Căn hộ', 'A', 'Nam hoặc Nữ', 1500000, 1500000, 4000, 20000, 100000, 0, 2, 20, 'user-00001',
     'Với kiến trúc nhà nhỏ khá hẹp như vậy thì gia chủ nên tối giản hóa thiết kế nhà, hạn chế những nội thất không cần thiết, và thay thế bằng những vật dụng đa năng. Ngoài ra, với không gian mẫu nhà nhỏ này, việc kết hợp nhà bếp và phòng khách, và xây dựng thêm gác lửng sẽ giúp tiết kiệm không gian và mang đến vẻ đẹp riêng cho căn nhà.',
@@ -33,7 +33,7 @@ insert into posts (id, "name", province, district, ward, street, "type", "status
     "https://bayleaf.s3.amazonaws.com/property-images%2F1637552672969_IMG_9389.JPG",
     "https://bayleaf.s3.amazonaws.com/property-images%2F1637552672969_IMG_9386.JPG"}',
     10.8205584, 106.7054508),
-('post-00002', 'Căn hộ dịch vụ Nguyễn xí, Quận Bình Thạnh', 
+('post-00002', 'Căn hộ dịch vụ Nguyễn Xí, Quận Bình Thạnh', 
     'Thành phố Hồ Chí Minh', 'Quận Bình Thạnh', 'Phường 26', '184/21/3 Nguyễn Xí',
     'Căn hộ', 'A', 'Nam hoặc Nữ', 5800000, 5800000, 4000, 100000, 100000, 0, 3, 24, 'user-00001',
     'Cách Vincom, SaiGonRes, chung cư Richmond city 5 phút  đi bộ, Gần Học Viện Cán Bộ, Công Nghiệp 4, trường ĐH Hutech, Ngoại Thương, Giao Thông Vận Tải 10 phút, Sân bay Quốc tế Tân Sơn Nhất 15 phút, cách quận 1chỉ  20p, gần the coffeehouse.  Highlands Coffee, viva cafe, nhà hàng, trung tâm thương mại khu ăn uống.',

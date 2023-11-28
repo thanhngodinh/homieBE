@@ -9,6 +9,7 @@ type PostHandler interface {
 	ElasticSearchPosts(w http.ResponseWriter, r *http.Request)
 	GetPostById(w http.ResponseWriter, r *http.Request)
 	GetCompare(w http.ResponseWriter, r *http.Request)
+	CheckCreatePost(w http.ResponseWriter, r *http.Request)
 	CreatePost(w http.ResponseWriter, r *http.Request)
 	UpdatePost(w http.ResponseWriter, r *http.Request)
 	UpdatePostStatus(w http.ResponseWriter, r *http.Request)

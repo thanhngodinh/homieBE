@@ -3,7 +3,6 @@ package handler
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -34,7 +33,7 @@ func (h *HttpUtilitiesHandler) GetAllUtilities(w http.ResponseWriter, r *http.Re
 	if err != nil {
 		util.JsonInternalError(w, err)
 	} else {
-		util.Json(w, http.StatusOK, utilities)
+		util.JsonOK(w, utilities)
 	}
 }
 
@@ -98,9 +97,7 @@ func (h *HttpUtilitiesHandler) UpdateUtilities(w http.ResponseWriter, r *http.Re
 			util.JsonInternalError(w, errors.New("internal server error"))
 		}
 	} else {
-		util.Json(w, http.StatusOK, util.Response{
-			Data: utilities,
-		})
+		util.JsonOK(w, utilities)
 	}
 }
 
@@ -113,15 +110,13 @@ func (h *HttpUtilitiesHandler) DeleteUtilities(w http.ResponseWriter, r *http.Re
 	res, err := h.service.DeleteUtilities(r.Context(), code)
 	if err != nil {
 		util.JsonInternalError(w, errors.New("internal server error"))
-	} else {
-		if res == 1 {
-			util.Json(w, http.StatusOK, util.Response{
-				Data: fmt.Sprintf("delete %s successfully", code),
-			})
-		} else {
-			util.Json(w, http.StatusNotFound, util.Response{
-				Data: fmt.Sprintf("not found %s", code),
-			})
-		}
+		return
 	}
+	if res == 0 {
+		util.Json(w, http.StatusNotFound, util.Response{
+			Status: "not found",
+		})
+		return
+	}
+	util.JsonOK(w)
 }

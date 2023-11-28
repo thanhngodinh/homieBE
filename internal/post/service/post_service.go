@@ -23,6 +23,7 @@ type PostService interface {
 	GetSuggestPosts(ctx context.Context, userId string) ([]domain.Post, int64, error)
 	GetPostById(ctx context.Context, postId string, userId string) (*domain.Post, error)
 	GetCompare(ctx context.Context, post1Id string, post2Id string, userId string) ([]domain.Post, error)
+	CheckCreatePost(ctx context.Context, userId string) (int64, error)
 	CreatePost(ctx context.Context, post *domain.Post) (int64, error)
 	UpdatePost(ctx context.Context, post *domain.Post) (int64, error)
 	UpdatePostStatus(ctx context.Context, userId string, status string) (int64, error)
@@ -129,6 +130,19 @@ func (s *postService) GetCompare(ctx context.Context, post1Id string, post2Id st
 	}
 
 	return res, err
+}
+
+func (s *postService) CheckCreatePost(ctx context.Context, userId string) (int64, error) {
+	user, err := s.userRepo.GetUserProfile(ctx, userId)
+	if err != nil {
+		return -1, err
+	}
+
+	if user.IsVerifiedPhone == nil || !*user.IsVerifiedPhone {
+		return 0, nil
+	}
+
+	return 1, nil
 }
 
 func (s *postService) CreatePost(ctx context.Context, post *domain.Post) (int64, error) {

@@ -3,7 +3,6 @@ package handler
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"path"
 	"strconv"
@@ -152,9 +151,9 @@ func (h *HttpPostHandler) GetPostById(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		util.JsonInternalError(w, err)
 	} else if post == nil {
-		util.Json(w, http.StatusNotFound, util.Response{})
+		util.Json(w, http.StatusNotFound, util.Response{Status: "not found"})
 	} else {
-		util.Json(w, http.StatusOK, post)
+		util.JsonOK(w, post)
 	}
 }
 
@@ -172,8 +171,32 @@ func (h *HttpPostHandler) GetCompare(w http.ResponseWriter, r *http.Request) {
 	} else if post == nil {
 		util.Json(w, http.StatusNotFound, util.Response{})
 	} else {
-		util.Json(w, http.StatusOK, domain.Compare{Post1: post[0], Post2: post[1]})
+		util.JsonOK(w, domain.Compare{Post1: post[0], Post2: post[1]})
 	}
+}
+
+func (h *HttpPostHandler) CheckCreatePost(w http.ResponseWriter, r *http.Request) {
+	userId := r.Context().Value("userId").(string)
+	if userId == "" {
+		util.Json(w, http.StatusOK, util.Response{
+			Status:  "not login",
+			Message: "User must login",
+		})
+		return
+	}
+	res, err := h.service.CheckCreatePost(r.Context(), userId)
+	if err != nil {
+		util.JsonInternalError(w, err)
+		return
+	}
+	if res == 0 {
+		util.Json(w, http.StatusOK, util.Response{
+			Status:  "not verify phone",
+			Message: "User must verify phone",
+		})
+		return
+	}
+	util.JsonOK(w)
 }
 
 func (h *HttpPostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
@@ -236,9 +259,7 @@ func (h *HttpPostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 			util.JsonInternalError(w, errors.New("internal server error"))
 		}
 	} else {
-		util.Json(w, http.StatusOK, util.Response{
-			Data: post,
-		})
+		util.JsonOK(w, post)
 	}
 }
 
@@ -274,15 +295,13 @@ func (h *HttpPostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	res, err := h.service.DeletePost(r.Context(), code)
 	if err != nil {
 		util.JsonInternalError(w, errors.New("internal server error"))
-	} else {
-		if res == 1 {
-			util.Json(w, http.StatusOK, util.Response{
-				Data: fmt.Sprintf("delete %s successfully", code),
-			})
-		} else {
-			util.Json(w, http.StatusNotFound, util.Response{
-				Data: fmt.Sprintf("not found %s", code),
-			})
-		}
+		return
 	}
+	if res == 0 {
+		util.Json(w, http.StatusNotFound, util.Response{
+			Status: "not found",
+		})
+		return
+	}
+	util.JsonOK(w)
 }

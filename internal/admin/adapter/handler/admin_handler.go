@@ -64,7 +64,7 @@ func (h *HttpAdminHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Token:   token,
 		Profile: nil,
 	}
-	util.Json(w, http.StatusOK, res)
+	util.JsonOK(w, res)
 
 }
 
