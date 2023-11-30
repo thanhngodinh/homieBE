@@ -3,9 +3,9 @@ package domain
 import "time"
 
 type Admin struct {
-	Id             string     `json:"id" gorm:"column:id;primary_key"`
-	Username       string     `json:"username" gorm:"column:username"`
-	Password       string     `json:"password" gorm:"column:password"`
+	Id             string     `json:"id,omitempty" gorm:"column:id;primary_key"`
+	Username       string     `json:"username,omitempty" gorm:"column:username"`
+	Password       string     `json:"-" gorm:"column:password"`
 	Phone          string     `json:"phone,omitempty" gorm:"column:phone"`
 	Email          string     `json:"email,omitempty" gorm:"column:email"`
 	Avatar         string     `json:"avatar,omitempty" gorm:"column:avatar_url"`

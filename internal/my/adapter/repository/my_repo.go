@@ -9,21 +9,21 @@ import (
 	"gorm.io/gorm"
 )
 
-func NewMyAdapter(db *gorm.DB) *MyAdapter {
-	return &MyAdapter{DB: db}
+func NewMyRepo(db *gorm.DB) *MyRepo {
+	return &MyRepo{DB: db}
 }
 
-type MyAdapter struct {
+type MyRepo struct {
 	DB *gorm.DB
 }
 
-func (r *MyAdapter) GetMyProfile(ctx context.Context, userId string) (*domain.UserProfile, error) {
+func (r *MyRepo) GetMyProfile(ctx context.Context, userId string) (*domain.UserProfile, error) {
 	res := &domain.UserProfile{}
 	r.DB.Table("users").Where("id = ?", userId).First(res)
 	return res, nil
 }
 
-func (r *MyAdapter) GetMyPostLiked(ctx context.Context, userId string) ([]post_domain.Post, int64, error) {
+func (r *MyRepo) GetMyPostLiked(ctx context.Context, userId string) ([]post_domain.Post, int64, error) {
 	posts := []post_domain.Post{}
 	res := r.DB.Table("posts").
 		Select(`posts.*, true as "is_liked"`).
@@ -32,7 +32,7 @@ func (r *MyAdapter) GetMyPostLiked(ctx context.Context, userId string) ([]post_d
 	return posts, res.RowsAffected, res.Error
 }
 
-func (r *MyAdapter) GetMyPosts(ctx context.Context, userId string) ([]post_domain.Post, int64, error) {
+func (r *MyRepo) GetMyPosts(ctx context.Context, userId string) ([]post_domain.Post, int64, error) {
 	posts := []post_domain.Post{}
 	res := r.DB.Table("posts").
 		Where("created_by = ?", userId).Order("created_at desc").
@@ -40,7 +40,7 @@ func (r *MyAdapter) GetMyPosts(ctx context.Context, userId string) ([]post_domai
 	return posts, res.RowsAffected, res.Error
 }
 
-func (r *MyAdapter) LikePost(ctx context.Context, up domain.LikePost) (int64, error) {
+func (r *MyRepo) LikePost(ctx context.Context, up domain.LikePost) (int64, error) {
 	res := r.DB.Table("user_like_posts").Create(up)
 	if res.Error != nil && res.Error.Error() == util.ErrorDuplicateKey {
 		res = r.DB.Table("user_like_posts").Delete(up)
@@ -48,12 +48,12 @@ func (r *MyAdapter) LikePost(ctx context.Context, up domain.LikePost) (int64, er
 	return res.RowsAffected, res.Error
 }
 
-func (r *MyAdapter) UpdateMyProfile(ctx context.Context, user *domain.UpdateMyProfileReq) error {
+func (r *MyRepo) UpdateMyProfile(ctx context.Context, user *domain.UpdateMyProfileReq) error {
 	res := r.DB.Table("users").Updates(user)
 	return res.Error
 }
 
-func (r *MyAdapter) UpdateMyAvatar(ctx context.Context, user *domain.UpdateMyAvatarReq) error {
+func (r *MyRepo) UpdateMyAvatar(ctx context.Context, user *domain.UpdateMyAvatarReq) error {
 	res := r.DB.Table("users").Updates(user)
 	return res.Error
 }

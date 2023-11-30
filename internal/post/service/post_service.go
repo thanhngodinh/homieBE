@@ -17,7 +17,6 @@ import (
 )
 
 type PostService interface {
-	GetPosts(ctx context.Context, post *domain.PostFilter, userId string) ([]domain.Post, int64, error)
 	ESearchPosts(ctx context.Context, post *domain.PostFilter, userId string) ([]domain.Post, int64, error)
 	SearchPosts(ctx context.Context, post *domain.PostFilter, userId string) ([]domain.Post, int64, error)
 	GetSuggestPosts(ctx context.Context, userId string) ([]domain.Post, int64, error)
@@ -26,7 +25,6 @@ type PostService interface {
 	CheckCreatePost(ctx context.Context, userId string) (int64, error)
 	CreatePost(ctx context.Context, post *domain.Post) (int64, error)
 	UpdatePost(ctx context.Context, post *domain.Post) (int64, error)
-	UpdatePostStatus(ctx context.Context, userId string, status string) (int64, error)
 	DeletePost(ctx context.Context, postId string) (int64, error)
 }
 
@@ -49,10 +47,6 @@ type postService struct {
 	userRepo   user_port.UserRepository
 	rateRepo   rate_port.RateRepository
 	esClient   *elasticsearch.Client
-}
-
-func (s *postService) GetPosts(ctx context.Context, post *domain.PostFilter, userId string) ([]domain.Post, int64, error) {
-	return s.repository.GetPosts(ctx, post, userId)
 }
 
 func (s *postService) SearchPosts(ctx context.Context, post *domain.PostFilter, userId string) ([]domain.Post, int64, error) {
@@ -157,10 +151,6 @@ func (s *postService) UpdatePost(ctx context.Context, post *domain.Post) (int64,
 	t := time.Now()
 	post.UpdatedAt = &t
 	return s.repository.UpdatePost(ctx, post)
-}
-
-func (s *postService) UpdatePostStatus(ctx context.Context, userId string, status string) (int64, error) {
-	return s.repository.UpdatePostStatus(ctx, userId, status)
 }
 
 func (s *postService) DeletePost(ctx context.Context, postId string) (int64, error) {

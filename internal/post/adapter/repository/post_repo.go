@@ -10,15 +10,15 @@ import (
 	"gorm.io/gorm"
 )
 
-func NewPostAdapter(db *gorm.DB) *PostAdapter {
-	return &PostAdapter{DB: db}
+func NewPostRepo(db *gorm.DB) *PostRepo {
+	return &PostRepo{DB: db}
 }
 
-type PostAdapter struct {
+type PostRepo struct {
 	DB *gorm.DB
 }
 
-func (r *PostAdapter) GetPosts(ctx context.Context, filter *domain.PostFilter, userId string) ([]domain.Post, int64, error) {
+func (r *PostRepo) GetPosts(ctx context.Context, filter *domain.PostFilter, userId string) ([]domain.Post, int64, error) {
 	var (
 		tx     *gorm.DB
 		hotels []domain.Post
@@ -29,7 +29,7 @@ func (r *PostAdapter) GetPosts(ctx context.Context, filter *domain.PostFilter, u
 	(select true from user_like_posts where user_like_posts.post_id = posts.id and user_like_posts.user_id = '%v') as "is_liked",
 	array_remove(array_agg(post_utilities.utility_id), NULL) as utilities,
 	posts.*`, userId)).
-		Joins("left join post_utilities on post_utilities.post_id = posts.id").Group("posts.id")
+		Joins("left join post_utilities on post_utilities.post_id = posts.id").Group("posts.id").Where("users.status = ?", "A")
 	if filter.Name != "" {
 		tx = tx.Where("name ilike ?", fmt.Sprintf("%%%v%%", filter.Name))
 	}
@@ -46,7 +46,7 @@ func (r *PostAdapter) GetPosts(ctx context.Context, filter *domain.PostFilter, u
 		tx = tx.Where("street ilike ?", fmt.Sprintf("%%%v%%", filter.Street))
 	}
 	if filter.Status != "" {
-		tx = tx.Where("status = ?", filter.Status)
+		tx = tx.Where("posts.status = ?", filter.Status)
 	}
 	if filter.CostFrom != 0 {
 		tx = tx.Where("cost >= ?", filter.CostFrom)
@@ -87,7 +87,7 @@ func (r *PostAdapter) GetPosts(ctx context.Context, filter *domain.PostFilter, u
 	return hotels, total, res2.Error
 }
 
-func (r *PostAdapter) GetPostById(ctx context.Context, id string) (*domain.Post, error) {
+func (r *PostRepo) GetPostById(ctx context.Context, id string) (*domain.Post, error) {
 	var post domain.Post
 
 	r.DB.Table("posts").
@@ -102,7 +102,7 @@ func (r *PostAdapter) GetPostById(ctx context.Context, id string) (*domain.Post,
 	return &post, nil
 }
 
-func (r *PostAdapter) GetPostByIds(ctx context.Context, ids []string) ([]domain.Post, error) {
+func (r *PostRepo) GetPostByIds(ctx context.Context, ids []string) ([]domain.Post, error) {
 	var post []domain.Post
 
 	r.DB.Table("posts").
@@ -114,7 +114,7 @@ func (r *PostAdapter) GetPostByIds(ctx context.Context, ids []string) ([]domain.
 	return post, nil
 }
 
-func (r *PostAdapter) CreatePost(ctx context.Context, post *domain.Post) (int64, error) {
+func (r *PostRepo) CreatePost(ctx context.Context, post *domain.Post) (int64, error) {
 	res := r.DB.Table("posts").Create(post)
 	if post.Utilities != nil {
 		hu := []domain.PostUtilities{}
@@ -130,7 +130,7 @@ func (r *PostAdapter) CreatePost(ctx context.Context, post *domain.Post) (int64,
 	return res.RowsAffected, res.Error
 }
 
-func (r *PostAdapter) UpdatePost(ctx context.Context, post *domain.Post) (int64, error) {
+func (r *PostRepo) UpdatePost(ctx context.Context, post *domain.Post) (int64, error) {
 	res := r.DB.Table("posts").Model(&post).Updates(post)
 	r.DB.Table("post_utilities").Where("post_id = ?", post.Id).Delete(domain.PostUtilities{})
 	if post.Utilities != nil {
@@ -142,12 +142,7 @@ func (r *PostAdapter) UpdatePost(ctx context.Context, post *domain.Post) (int64,
 	return res.RowsAffected, res.Error
 }
 
-func (r *PostAdapter) UpdatePostStatus(ctx context.Context, userId string, status string) (int64, error) {
-	res := r.DB.Table("posts").Where("id = ?", userId).Updates(map[string]interface{}{"satus": status})
-	return res.RowsAffected, res.Error
-}
-
-func (r *PostAdapter) DeletePost(ctx context.Context, post *domain.Post) (int64, error) {
+func (r *PostRepo) DeletePost(ctx context.Context, post *domain.Post) (int64, error) {
 	res := r.DB.Table("posts").Delete(post)
 	return res.RowsAffected, res.Error
 }

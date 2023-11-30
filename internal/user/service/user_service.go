@@ -20,12 +20,9 @@ type UserService interface {
 	SearchRoommates(ctx context.Context, filter *domain.RoommateFilter) ([]domain.Roommate, int64, error)
 	GetRoommateById(ctx context.Context, userId string) (*domain.Roommate, error)
 	GetUserProfile(ctx context.Context, userId string) (*domain.UserProfile, error)
-	GetByUsername(ctx context.Context, username string) (*domain.UserProfile, error)
 	GetUserSuggest(ctx context.Context, userId string) (*domain.UserSuggest, error)
-	UpdateUserStatus(ctx context.Context, userId string, status string) error
 	UpdateUserSuggest(ctx context.Context, userUpdate *domain.UpdateUserSuggest) error
 	UpdatePassword(ctx context.Context, userId string, oldPassword string, newPassword string) error
-	ResetPassword(ctx context.Context, userId string) error
 	VerifyPhone(ctx context.Context, userId string, phone string) error
 	VerifyPhoneOTP(ctx context.Context, userId string, otp string) error
 }
@@ -62,18 +59,13 @@ func (s *userService) GetUserSuggest(ctx context.Context, userId string) (*domai
 	return s.userRepo.GetUserSuggest(ctx, userId)
 }
 
-func (s *userService) GetByUsername(ctx context.Context, username string) (*domain.UserProfile, error) {
-	return s.userRepo.GetByUsername(ctx, username)
-}
-
-func (s *userService) GetById(ctx context.Context, id string) (*domain.User, error) {
-	return s.userRepo.GetById(ctx, id)
-}
-
 func (s *userService) Login(ctx context.Context, username string, password string) (*domain.UserProfile, string, int, error) {
-	user, err := s.GetByUsername(ctx, username)
+	user, err := s.userRepo.GetByUsername(ctx, username)
 	if err != nil {
 		return nil, "", 0, errors.New("Not found user. Error: " + err.Error())
+	}
+	if user.Status != "A" {
+		return nil, "", 0, errors.New("User not active. Error: " + err.Error())
 	}
 
 	if password == "" || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
@@ -129,7 +121,7 @@ func (s *userService) Register(ctx context.Context, username string, phone strin
 }
 
 func (s *userService) UpdatePassword(ctx context.Context, userId string, oldPassword string, newPassword string) error {
-	user, err := s.userRepo.GetById(ctx, userId)
+	user, err := s.userRepo.GetUserById(ctx, userId)
 	if err != nil {
 		return err
 	}
@@ -141,30 +133,6 @@ func (s *userService) UpdatePassword(ctx context.Context, userId string, oldPass
 		return err
 	}
 	return s.userRepo.UpdatePassword(ctx, userId, string(hashedPassword))
-}
-
-func (s *userService) ResetPassword(ctx context.Context, userId string) error {
-	user, err := s.userRepo.GetById(ctx, userId)
-	if err != nil {
-		return err
-	}
-
-	newPassword := uuid.New().String()[0:6]
-
-	err = send_email.SendPasswordResetEmail(user.Email, newPassword)
-	if err != nil {
-		return err
-	}
-
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
-	if err != nil {
-		return err
-	}
-	return s.userRepo.UpdatePassword(ctx, userId, string(hashedPassword))
-}
-
-func (s *userService) UpdateUserStatus(ctx context.Context, userId string, status string) error {
-	return s.userRepo.UpdateUserStatus(ctx, userId, status)
 }
 
 func (s *userService) VerifyPhone(ctx context.Context, userId string, phone string) error {
@@ -180,7 +148,7 @@ func (s *userService) VerifyPhone(ctx context.Context, userId string, phone stri
 }
 
 func (s *userService) VerifyPhoneOTP(ctx context.Context, userId string, otp string) error {
-	user, err := s.userRepo.GetById(ctx, userId)
+	user, err := s.userRepo.GetUserById(ctx, userId)
 	if err != nil {
 		return err
 	}

@@ -15,8 +15,6 @@ type Response struct {
 }
 
 const Success = "success"
-const BadRequest = "bad request"
-const InternalServerError = "internal server error"
 
 func Json(w http.ResponseWriter, code int, res interface{}) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -39,7 +37,7 @@ func JsonBadRequest(w http.ResponseWriter, err error, message ...string) error {
 	if message != nil {
 		return Json(w, http.StatusBadRequest, Response{Status: err.Error(), Message: message[0]})
 	}
-	return Json(w, http.StatusBadRequest, Response{Status: err.Error(), Message: BadRequest})
+	return Json(w, http.StatusBadRequest, Response{Status: err.Error(), Message: err.Error()})
 }
 
 func JsonInternalError(w http.ResponseWriter, err error, message ...string) error {
@@ -47,5 +45,5 @@ func JsonInternalError(w http.ResponseWriter, err error, message ...string) erro
 	if message != nil {
 		return Json(w, http.StatusInternalServerError, Response{Status: err.Error(), Message: message[0]})
 	}
-	return Json(w, http.StatusInternalServerError, Response{Status: err.Error(), Message: InternalServerError})
+	return Json(w, http.StatusInternalServerError, Response{Status: err.Error(), Message: err.Error()})
 }

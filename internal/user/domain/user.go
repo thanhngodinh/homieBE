@@ -8,6 +8,7 @@ type User struct {
 	Password        string     `json:"password" gorm:"column:password"`
 	Phone           string     `json:"phone,omitempty" gorm:"column:phone"`
 	Email           string     `json:"email,omitempty" gorm:"column:email"`
+	Status          string     `json:"status,omitempty" gorm:"column:status"`
 	IsVerifiedEmail *bool      `json:"isVerifiedEmail,omitempty" gorm:"column:is_verified_email"`
 	IsVerifiedPhone *bool      `json:"isVerifiedPhone,omitempty" gorm:"column:is_verified_phone"`
 	OTP             string     `json:"-" gorm:"colum:created_at"`
@@ -31,6 +32,7 @@ type UserProfile struct {
 	Id              string     `json:"id" gorm:"column:id;primary_key"`
 	Username        string     `json:"username" gorm:"column:username"`
 	Password        string     `json:"-" gorm:"column:password"`
+	Status          string     `json:"status,omitempty" gorm:"column:status"`
 	Phone           string     `json:"phone,omitempty" gorm:"column:phone"`
 	Email           string     `json:"email,omitempty" gorm:"column:email"`
 	IsVerifiedEmail *bool      `json:"isVerifiedEmail,omitempty" gorm:"column:is_verified_email"`

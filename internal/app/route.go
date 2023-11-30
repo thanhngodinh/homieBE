@@ -14,18 +14,37 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 		return err
 	}
 
+	//Admin
+	adminRouter := r.PathPrefix("/admin").Subrouter()
+	r.HandleFunc("/admin/login", app.Admin.Login).Methods(POST)
+
+	adminRouter.HandleFunc("/profile", app.Admin.GetAdminProfile).Methods(GET)
+	adminRouter.HandleFunc("/password", app.Admin.UpdatePassword).Methods(PATCH)
+	adminRouter.Use(internalMid.AdminAuthenticate)
+
 	adminUserRouter := r.PathPrefix("/users").Subrouter()
-	adminUserRouter.HandleFunc("/{userId}/reset-password", app.User.ResetUserPassword).Methods(PATCH)
-	adminUserRouter.HandleFunc("/{userId}/disable", app.User.UpdateUserStatus).Methods(PATCH)
-	adminUserRouter.HandleFunc("/{userId}/active", app.User.UpdateUserStatus).Methods(PATCH)
+	adminUserRouter.HandleFunc("/search", app.Admin.SearchUsers).Methods(POST)
+	adminUserRouter.HandleFunc("/{userId}", app.Admin.GetUserById).Methods(GET)
+	adminUserRouter.HandleFunc("/{userId}/reset-password", app.Admin.ResetUserPassword).Methods(PATCH)
+	adminUserRouter.HandleFunc("/{userId}/disable", app.Admin.UpdateUserStatus).Methods(PATCH)
+	adminUserRouter.HandleFunc("/{userId}/active", app.Admin.UpdateUserStatus).Methods(PATCH)
 	adminUserRouter.Use(internalMid.AdminAuthenticate)
 
-	adminPostRouter := r.PathPrefix("/posts").Subrouter()
-	adminPostRouter.HandleFunc("/{postId}/verify", app.Post.UpdatePostStatus).Methods(PATCH)
-	adminPostRouter.HandleFunc("/{postId}/active", app.Post.UpdatePostStatus).Methods(PATCH)
-	adminPostRouter.HandleFunc("/{postId}/disable", app.Post.UpdatePostStatus).Methods(PATCH)
+	adminPostRouter := adminRouter.PathPrefix("/posts").Subrouter()
+	adminPostRouter.HandleFunc("/search", app.Admin.SearchPosts).Methods(POST)
+	adminPostRouter.HandleFunc("/{postId}", app.Admin.GetPostById).Methods(GET)
+	adminPostRouter.HandleFunc("/{postId}/verify", app.Admin.UpdatePostStatus).Methods(PATCH)
+	adminPostRouter.HandleFunc("/{postId}/active", app.Admin.UpdatePostStatus).Methods(PATCH)
+	adminPostRouter.HandleFunc("/{postId}/disable", app.Admin.UpdatePostStatus).Methods(PATCH)
 	adminPostRouter.Use(internalMid.AdminAuthenticate)
 
+	utilitiesRouter := r.PathPrefix("/utilities").Subrouter()
+	utilitiesRouter.HandleFunc("", app.Utilities.CreateUtilities).Methods(POST)
+	utilitiesRouter.HandleFunc("/{id}", app.Utilities.UpdateUtilities).Methods(PUT)
+	utilitiesRouter.HandleFunc("/{id}", app.Utilities.DeleteUtilities).Methods(DELETE)
+	utilitiesRouter.Use(internalMid.AdminAuthenticate)
+
+	//User
 	myRouter := r.PathPrefix("/my").Subrouter()
 	myRouter.HandleFunc("/liked-posts", app.My.GetMyPostLiked).Methods(GET)
 	myRouter.HandleFunc("/posts", app.My.GetMyPosts).Methods(GET)
@@ -39,10 +58,6 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 	myRouter.HandleFunc("/avatar", app.My.UpdateMyAvatar).Methods(PUT)
 	myRouter.Use(internalMid.Authenticate)
 
-	userRouter := r.PathPrefix("/users").Subrouter()
-	userRouter.HandleFunc("/{userId}", app.User.GetUserProfile).Methods(GET)
-	userRouter.Use(internalMid.Authenticate)
-
 	hostelRouter := r.PathPrefix("/posts").Subrouter()
 	hostelRouter.HandleFunc("", app.Post.CreatePost).Methods(POST)
 	hostelRouter.HandleFunc("/like/{postId}", app.My.LikePost).Methods(POST)
@@ -51,7 +66,6 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 	hostelRouter.Use(internalMid.Authenticate)
 
 	hostelPublicRouter := r.PathPrefix("/posts").Subrouter()
-	hostelPublicRouter.HandleFunc("", app.Post.GetPosts).Methods(GET)
 	hostelPublicRouter.HandleFunc("/search", app.Post.SearchPosts).Methods(POST)
 	hostelPublicRouter.HandleFunc("/esearch", app.Post.ElasticSearchPosts).Methods(POST)
 	hostelPublicRouter.HandleFunc("/suggest", app.Post.GetSuggestPosts).Methods(GET)
@@ -62,20 +76,15 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 
 	rateRouter := r.PathPrefix("/rates").Subrouter()
 	rateRouter.HandleFunc("", app.Rate.CreateRate).Methods(POST)
-	rateRouter.HandleFunc("/{postId}", app.Rate.UpdateRate).Methods(PUT)
+	rateRouter.HandleFunc("/{postId}", app.Rate.UpdateRate).Methods(PATCH)
 	rateRouter.Use(internalMid.Authenticate)
 
 	roommateRouter := r.PathPrefix("/roommates").Subrouter()
 	roommateRouter.HandleFunc("/search", app.User.SearchRoommates).Methods(POST)
 	roommateRouter.HandleFunc("/{userId}", app.User.GetRoommateById).Methods(GET)
-	// roommateRouter.Use(internalMid.PublicAuth)
+	roommateRouter.Use(internalMid.PublicAuth)
 
 	r.HandleFunc("/utilities", app.Utilities.GetAllUtilities).Methods(GET)
-	utilitiesRouter := r.PathPrefix("/utilities").Subrouter()
-	utilitiesRouter.HandleFunc("", app.Utilities.CreateUtilities).Methods(POST)
-	utilitiesRouter.HandleFunc("/{id}", app.Utilities.UpdateUtilities).Methods(PUT)
-	utilitiesRouter.HandleFunc("/{id}", app.Utilities.DeleteUtilities).Methods(DELETE)
-	utilitiesRouter.Use(internalMid.Authenticate)
 
 	authRouter := r.PathPrefix("/auth").Subrouter()
 	authRouter.HandleFunc("/register", app.User.Register).Methods(POST)

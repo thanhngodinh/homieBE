@@ -12,11 +12,10 @@ type UserRepository interface {
 	GetUserProfile(ctx context.Context, userId string) (*domain.UserProfile, error)
 	GetUserSuggest(ctx context.Context, userId string) (*domain.UserSuggest, error)
 	GetByUsername(ctx context.Context, username string) (*domain.UserProfile, error)
-	GetById(ctx context.Context, userId string) (*domain.User, error)
+	GetUserById(ctx context.Context, userId string) (*domain.User, error)
 	Create(ctx context.Context, user *domain.CreateUser) error
 	UpdateUserSuggest(ctx context.Context, us *domain.UpdateUserSuggest) error
 	UpdatePassword(ctx context.Context, userId string, newPassword string) error
-	UpdateUserStatus(ctx context.Context, userId string, status string) error
 	VerifyPhone(ctx context.Context, userId string, phone string, otp string, expirationTime time.Time) error
 	VerifyPhoneOTP(ctx context.Context, userId string, otp string) error
 }

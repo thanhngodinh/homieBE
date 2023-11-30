@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"path"
-	"strconv"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
@@ -30,55 +28,6 @@ type HttpPostHandler struct {
 	validate *validator.Validate
 }
 
-func (h *HttpPostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
-	userId := r.Context().Value("userId").(string)
-	pageIdxParam := r.URL.Query().Get("pageIdx")
-	pageSizeParam := r.URL.Query().Get("pageSize")
-	sort := r.URL.Query().Get("sort")
-
-	post := &domain.PostFilter{
-		Sort: "created_at desc",
-	}
-	if len(sort) > 0 {
-		post.Sort = sort
-	}
-	if len(pageIdxParam) > 0 {
-		pageIdx, err := strconv.Atoi(pageIdxParam)
-		if err != nil {
-			util.Json(w, http.StatusBadRequest, util.Response{
-				Status: util.ErrorWrongTypePageIdx.Error(),
-			})
-			return
-		}
-		post.PageIdx = pageIdx
-	} else {
-		post.PageIdx = 0
-	}
-
-	if len(pageSizeParam) > 0 {
-		pageSize, err := strconv.Atoi(pageSizeParam)
-		if err != nil {
-			util.Json(w, http.StatusBadRequest, util.Response{
-				Status: util.ErrorWrongTypePageSize.Error(),
-			})
-			return
-		}
-		post.PageSize = pageSize
-	} else {
-		post.PageSize = 10
-	}
-
-	posts, total, err := h.service.GetPosts(r.Context(), post, userId)
-	if err != nil {
-		util.JsonInternalError(w, err)
-	} else {
-		util.Json(w, http.StatusOK, util.Response{
-			Data:  posts,
-			Total: total,
-		})
-	}
-}
-
 func (h *HttpPostHandler) SearchPosts(w http.ResponseWriter, r *http.Request) {
 	post := &domain.PostFilter{
 		Sort: "created_at desc",
@@ -92,7 +41,7 @@ func (h *HttpPostHandler) SearchPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userId := r.Context().Value("userId").(string)
-	posts, total, err := h.service.GetPosts(r.Context(), post, userId)
+	posts, total, err := h.service.SearchPosts(r.Context(), post, userId)
 	if err != nil {
 		util.JsonInternalError(w, err)
 	} else {
@@ -261,29 +210,6 @@ func (h *HttpPostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	} else {
 		util.JsonOK(w, post)
 	}
-}
-
-func (h *HttpPostHandler) UpdatePostStatus(w http.ResponseWriter, r *http.Request) {
-	postId := mux.Vars(r)["postId"]
-	if len(postId) == 0 {
-		util.JsonBadRequest(w, util.ErrorCodeEmpty)
-		return
-	}
-	status := ""
-	switch path.Base(r.URL.Path) {
-	case "disable":
-		status = "I"
-	case "active":
-		status = "A"
-	case "verify":
-		status = "V"
-	}
-	_, err := h.service.UpdatePostStatus(r.Context(), postId, status)
-	if err != nil {
-		util.JsonInternalError(w, err)
-		return
-	}
-	util.JsonOK(w)
 }
 
 func (h *HttpPostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {

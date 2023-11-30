@@ -3,12 +3,12 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
-	"path"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 
 	"hostel-service/internal/user/domain"
+	"hostel-service/internal/user/port"
 	"hostel-service/internal/user/service"
 	"hostel-service/pkg/util"
 )
@@ -16,7 +16,7 @@ import (
 func NewUserHandler(
 	service service.UserService,
 	validate *validator.Validate,
-) *HttpUserHandler {
+) port.UserHandler {
 	return &HttpUserHandler{
 		service:  service,
 		validate: validate,
@@ -42,7 +42,7 @@ func (h *HttpUserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		util.JsonInternalError(w, err)
 		return
 	} else if code == 0 {
-		util.JsonBadRequest(w, err, "Username or password is not match")
+		util.JsonBadRequest(w, err, "Tài khoản hoặc mật khẩu không chính xác")
 		return
 	}
 
@@ -124,28 +124,6 @@ func (h *HttpUserHandler) GetRoommateById(w http.ResponseWriter, r *http.Request
 	}
 }
 
-func (h *HttpUserHandler) UpdateUserStatus(w http.ResponseWriter, r *http.Request) {
-	userId := mux.Vars(r)["userId"]
-	if len(userId) == 0 {
-		util.JsonBadRequest(w, util.ErrorCodeEmpty)
-		return
-	}
-	status := ""
-	switch path.Base(r.URL.Path) {
-	case "disable":
-		status = "I"
-	case "active":
-		status = "A"
-	}
-
-	err := h.service.UpdateUserStatus(r.Context(), userId, status)
-	if err != nil {
-		util.JsonInternalError(w, err)
-		return
-	}
-	util.JsonOK(w)
-}
-
 func (h *HttpUserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	req := &domain.UpdatePasswordReq{}
 	userId := r.Context().Value("userId").(string)
@@ -157,21 +135,6 @@ func (h *HttpUserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request)
 	}
 
 	err = h.service.UpdatePassword(r.Context(), userId, req.OldPassword, req.NewPassword)
-	if err != nil {
-		util.JsonInternalError(w, err)
-		return
-	}
-	util.JsonOK(w)
-}
-
-func (h *HttpUserHandler) ResetUserPassword(w http.ResponseWriter, r *http.Request) {
-	userId := mux.Vars(r)["userId"]
-	if len(userId) == 0 {
-		util.JsonBadRequest(w, util.ErrorCodeEmpty)
-		return
-	}
-
-	err := h.service.ResetPassword(r.Context(), userId)
 	if err != nil {
 		util.JsonInternalError(w, err)
 		return

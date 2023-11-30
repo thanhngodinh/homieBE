@@ -16,6 +16,11 @@ import (
 	postPort "hostel-service/internal/post/port"
 	postService "hostel-service/internal/post/service"
 
+	adminHandler "hostel-service/internal/admin/adapter/handler"
+	adminRepository "hostel-service/internal/admin/adapter/repository"
+	adminPort "hostel-service/internal/admin/port"
+	adminService "hostel-service/internal/admin/service"
+
 	userHandler "hostel-service/internal/user/adapter/handler"
 	userRepository "hostel-service/internal/user/adapter/repository"
 	userPort "hostel-service/internal/user/port"
@@ -43,6 +48,7 @@ import (
 )
 
 type ApplicationContext struct {
+	Admin     adminPort.AdminHandler
 	Post      postPort.PostHandler
 	Utilities utilitiesPort.UtilitiesHandler
 	User      userPort.UserHandler
@@ -69,17 +75,21 @@ func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
 	validate := validator.New()
 
 	// Repo
-	postRepository := postRepository.NewPostAdapter(gormDb)
+	postRepository := postRepository.NewPostRepo(gormDb)
 	userRepository := userRepository.NewUserRepo(gormDb)
-	myRepository := myRepository.NewMyAdapter(gormDb)
-	utilitiesRepository := utilitiesRepository.NewUtilitiesAdapter(gormDb)
-	rateRepository := rateRepository.NewRateAdapter(gormDb)
+	adminRepository := adminRepository.NewAdminRepo(gormDb)
+	myRepository := myRepository.NewMyRepo(gormDb)
+	utilitiesRepository := utilitiesRepository.NewUtilitiesRepo(gormDb)
+	rateRepository := rateRepository.NewRateRepo(gormDb)
 
 	postService := postService.NewPostService(postRepository, userRepository, rateRepository, es)
 	postHandler := postHandler.NewPostHandler(postService, validate)
 
 	utilitiesService := utilitiesService.NewUtilitiesService(utilitiesRepository)
 	utilitiesHandler := utilitiesHandler.NewUtilitiesHandler(utilitiesService, validate)
+
+	adminService := adminService.NewAdminService(adminRepository, rateRepository)
+	adminHandler := adminHandler.NewAdminHandler(adminService, validate)
 
 	userService := userService.NewUserService(userRepository)
 	userHandler := userHandler.NewUserHandler(userService, validate)
@@ -96,6 +106,7 @@ func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
 	return &ApplicationContext{
 		Post:      postHandler,
 		Utilities: utilitiesHandler,
+		Admin:     adminHandler,
 		User:      userHandler,
 		My:        myHandler,
 		Rate:      rateHandler,
