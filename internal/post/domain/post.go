@@ -24,6 +24,7 @@ type Post struct {
 	District         string                    `json:"district,omitempty" gorm:"column:district"`
 	Ward             string                    `json:"ward,omitempty" gorm:"column:ward"`
 	Street           string                    `json:"street,omitempty" gorm:"column:street"`
+	Type             string                    `json:"type,omitempty" gorm:"column:type"`
 	Status           PostStatus                `json:"status,omitempty" gorm:"column:status;type:text"`
 	Cost             int                       `json:"cost,omitempty" gorm:"column:cost"`
 	Deposit          int                       `json:"deposit,omitempty" gorm:"column:deposit"`
@@ -33,7 +34,6 @@ type Post struct {
 	ServicePrice     int                       `json:"servicePrice,omitempty" gorm:"column:service_price"`
 	Capacity         int                       `json:"capacity,omitempty" gorm:"column:capacity"`
 	Area             int                       `json:"area,omitempty" gorm:"column:area"`
-	Phone            string                    `json:"phone,omitempty" gorm:"column:phone"`
 	ImageUrl         pq.StringArray            `json:"imageUrl,omitempty" gorm:"column:image_url;type:text[]"`
 	Utilities        pq.StringArray            `json:"utilities,omitempty" gorm:"utilities;type:text[];->"`
 	IsLiked          bool                      `json:"isLiked" gorm:"is_liked;->"`
@@ -44,6 +44,7 @@ type Post struct {
 	AuthorId         string                    `json:"authorId" gorm:"column:author_id;->"`
 	AuthorName       string                    `json:"authorName" gorm:"column:author_name;->"`
 	AuthorAvatar     string                    `json:"authorAvatar" gorm:"column:author_avatar;->"`
+	Phone            string                    `json:"phone,omitempty" gorm:"column:phone;->"`
 	RateInfo         *rate_domain.PostRateInfo `json:"rateInfo" gorm:"column:rate_info;->"`
 	CreatedAt        time.Time                 `json:"createdAt,omitempty" gorm:"colum:created_at"`
 	EndedAt          time.Time                 `json:"endedAt,omitempty" gorm:"colum:ended_at"`

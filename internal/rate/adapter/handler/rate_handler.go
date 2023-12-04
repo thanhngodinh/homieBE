@@ -52,6 +52,14 @@ func (h *HttpRateHandler) CreateRate(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+	postId := mux.Vars(r)["postId"]
+	if len(postId) == 0 {
+		util.JsonBadRequest(w, util.ErrorIdEmpty)
+		return
+	} else if postId != rate.PostId {
+		util.JsonBadRequest(w, util.ErrorCodeNotMatch)
+		return
+	}
 	rate.UserId = r.Context().Value("userId").(string)
 	_, er3 := h.service.CreateRate(r.Context(), rate)
 	if er3 != nil {

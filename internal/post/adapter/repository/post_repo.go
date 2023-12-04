@@ -29,7 +29,7 @@ func (r *PostRepo) GetPosts(ctx context.Context, filter *domain.PostFilter, user
 	(select true from user_like_posts where user_like_posts.post_id = posts.id and user_like_posts.user_id = '%v') as "is_liked",
 	array_remove(array_agg(post_utilities.utility_id), NULL) as utilities,
 	posts.*`, userId)).
-		Joins("left join post_utilities on post_utilities.post_id = posts.id").Group("posts.id").Where("users.status = ?", "A")
+		Joins("left join post_utilities on post_utilities.post_id = posts.id").Group("posts.id")
 	if filter.Name != "" {
 		tx = tx.Where("name ilike ?", fmt.Sprintf("%%%v%%", filter.Name))
 	}
@@ -92,7 +92,7 @@ func (r *PostRepo) GetPostById(ctx context.Context, id string) (*domain.Post, er
 
 	r.DB.Table("posts").
 		Select(`posts.*,
-		users.id as author_id, users.display_name as author_name, users.avatar_url as author_avatar,
+		users.id as author_id, users.display_name as author_name, users.avatar_url as author_avatar, users.phone as phone,
 		array_remove(array_agg(post_utilities.utility_id), NULL) as utilities`).
 		Joins("left join users on users.id = posts.created_by").
 		Joins("left join post_utilities on post_utilities.post_id = posts.id").

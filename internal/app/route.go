@@ -75,7 +75,7 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 	hostelPublicRouter.Use(internalMid.PublicAuth)
 
 	rateRouter := r.PathPrefix("/rates").Subrouter()
-	rateRouter.HandleFunc("", app.Rate.CreateRate).Methods(POST)
+	rateRouter.HandleFunc("/{postId}", app.Rate.CreateRate).Methods(POST)
 	rateRouter.HandleFunc("/{postId}", app.Rate.UpdateRate).Methods(PATCH)
 	rateRouter.Use(internalMid.Authenticate)
 
