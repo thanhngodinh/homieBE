@@ -29,17 +29,23 @@ type User struct {
 }
 
 type UserProfile struct {
-	Id              string     `json:"id" gorm:"column:id;primary_key"`
-	Username        string     `json:"username" gorm:"column:username"`
-	Phone           string     `json:"phone,omitempty" gorm:"column:phone"`
-	Email           string     `json:"email,omitempty" gorm:"column:email"`
-	IsEmailVerified *bool      `json:"isVerifiedEmail,omitempty" gorm:"column:is_verified_email"`
-	IsEmailPhone    *bool      `json:"isVerifiedPhone,omitempty" gorm:"column:is_verified_phone"`
-	IsFindRoommate  *bool      `json:"isFindRoommate,omitempty" gorm:"column:is_find_roommate;default:true"`
-	DateOfBirth     *time.Time `json:"dateOfBirth,omitempty" gorm:"column:date_of_birth"`
-	Avatar          string     `json:"avatar,omitempty" gorm:"column:avatar_url"`
-	Gender          string     `json:"gender,omitempty" gorm:"column:gender"`
-	Name            string     `json:"name,omitempty" gorm:"column:display_name"`
+	Id              string         `json:"id" gorm:"column:id;primary_key"`
+	Username        string         `json:"username" gorm:"column:username"`
+	Phone           string         `json:"phone,omitempty" gorm:"column:phone"`
+	Email           string         `json:"email,omitempty" gorm:"column:email"`
+	IsEmailVerified *bool          `json:"isVerifiedEmail,omitempty" gorm:"column:is_verified_email"`
+	IsEmailPhone    *bool          `json:"isVerifiedPhone,omitempty" gorm:"column:is_verified_phone"`
+	IsFindRoommate  *bool          `json:"isFindRoommate,omitempty" gorm:"column:is_find_roommate;default:true"`
+	DateOfBirth     *time.Time     `json:"dateOfBirth,omitempty" gorm:"column:date_of_birth"`
+	Avatar          string         `json:"avatar,omitempty" gorm:"column:avatar_url"`
+	Gender          string         `json:"gender,omitempty" gorm:"column:gender"`
+	Name            string         `json:"name,omitempty" gorm:"column:display_name"`
+	Province        string         `json:"province,omitempty" gorm:"column:province_profile"`
+	District        pq.StringArray `json:"district,omitempty" gorm:"column:district_profile"`
+	CostFrom        int            `json:"costFrom,omitempty" gorm:"column:cost_from"`
+	CostTo          int            `json:"costTo,omitempty" gorm:"column:cost_to"`
+	NumPost         int            `json:"numPost,omitempty" gorm:"column:post;->"`
+	NumLike         int            `json:"numLike,omitempty" gorm:"column:like;->"`
 }
 
 type UpdateMyProfileReq struct {

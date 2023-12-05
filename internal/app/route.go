@@ -55,7 +55,7 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 	myRouter.HandleFunc("/password", app.User.UpdatePassword).Methods(PATCH)
 	myRouter.HandleFunc("/profile", app.My.GetMyProfile).Methods(GET)
 	myRouter.HandleFunc("/profile", app.My.UpdateMyProfile).Methods(PUT)
-	myRouter.HandleFunc("/avatar", app.My.UpdateMyAvatar).Methods(PUT)
+	myRouter.HandleFunc("/avatar", app.My.UpdateMyAvatar).Methods(PATCH)
 	myRouter.Use(internalMid.Authenticate)
 
 	hostelRouter := r.PathPrefix("/posts").Subrouter()
@@ -86,7 +86,7 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 
 	r.HandleFunc("/utilities", app.Utilities.GetAllUtilities).Methods(GET)
 
-	r.HandleFunc("users/{userId}", app.User.GetUserProfile).Methods(GET)
+	r.HandleFunc("/users/{userId}", app.User.GetUserProfile).Methods(GET)
 
 	authRouter := r.PathPrefix("/auth").Subrouter()
 	authRouter.HandleFunc("/register", app.User.Register).Methods(POST)

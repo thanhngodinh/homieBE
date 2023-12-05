@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"hostel-service/internal/my/domain"
 	post_domain "hostel-service/internal/post/domain"
 	"hostel-service/pkg/util"
@@ -19,7 +20,12 @@ type MyRepo struct {
 
 func (r *MyRepo) GetMyProfile(ctx context.Context, userId string) (*domain.UserProfile, error) {
 	res := &domain.UserProfile{}
-	r.DB.Table("users").Where("id = ?", userId).First(res)
+	r.DB.Table("users").
+		Select(fmt.Sprintf(`users.*,
+		(select count(*) from user_like_posts where user_like_posts.user_id = '%s') as "like",
+		(select count(*) from posts where posts.created_by = '%s') as "post"`,
+			userId, userId)).
+		Where("users.id = ?", userId).First(res)
 	return res, nil
 }
 

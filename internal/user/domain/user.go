@@ -40,7 +40,12 @@ type UserProfile struct {
 	IsFindRoommate  *bool      `json:"isFindRoommate,omitempty" gorm:"column:is_find_roommate;default:true"`
 	DateOfBirth     *time.Time `json:"dateOfBirth,omitempty" gorm:"column:date_of_birth"`
 	Avatar          string     `json:"avatar,omitempty" gorm:"column:avatar_url"`
+	Gender          string     `json:"gender,omitempty" gorm:"column:gender"`
 	Name            string     `json:"name,omitempty" gorm:"column:display_name"`
+	Province        string     `json:"province,omitempty" gorm:"column:province_profile"`
+	District        string     `json:"district,omitempty" gorm:"column:district_profile"`
+	CostFrom        int        `json:"costFrom,omitempty" gorm:"column:cost_from"`
+	CostTo          int        `json:"costTo,omitempty" gorm:"column:cost_to"`
 }
 
 type CreateUser struct {
