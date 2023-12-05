@@ -22,13 +22,13 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 	adminRouter.HandleFunc("/password", app.Admin.UpdatePassword).Methods(PATCH)
 	adminRouter.Use(internalMid.AdminAuthenticate)
 
-	adminUserRouter := r.PathPrefix("/users").Subrouter()
+	adminUserRouter := adminRouter.PathPrefix("/users").Subrouter()
 	adminUserRouter.HandleFunc("/search", app.Admin.SearchUsers).Methods(POST)
 	adminUserRouter.HandleFunc("/{userId}", app.Admin.GetUserById).Methods(GET)
 	adminUserRouter.HandleFunc("/{userId}/reset-password", app.Admin.ResetUserPassword).Methods(PATCH)
 	adminUserRouter.HandleFunc("/{userId}/disable", app.Admin.UpdateUserStatus).Methods(PATCH)
 	adminUserRouter.HandleFunc("/{userId}/active", app.Admin.UpdateUserStatus).Methods(PATCH)
-	adminUserRouter.Use(internalMid.AdminAuthenticate)
+	// adminUserRouter.Use(internalMid.AdminAuthenticate)
 
 	adminPostRouter := adminRouter.PathPrefix("/posts").Subrouter()
 	adminPostRouter.HandleFunc("/search", app.Admin.SearchPosts).Methods(POST)
@@ -36,7 +36,7 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 	adminPostRouter.HandleFunc("/{postId}/verify", app.Admin.UpdatePostStatus).Methods(PATCH)
 	adminPostRouter.HandleFunc("/{postId}/active", app.Admin.UpdatePostStatus).Methods(PATCH)
 	adminPostRouter.HandleFunc("/{postId}/disable", app.Admin.UpdatePostStatus).Methods(PATCH)
-	adminPostRouter.Use(internalMid.AdminAuthenticate)
+	// adminPostRouter.Use(internalMid.AdminAuthenticate)
 
 	utilitiesRouter := r.PathPrefix("/utilities").Subrouter()
 	utilitiesRouter.HandleFunc("", app.Utilities.CreateUtilities).Methods(POST)
@@ -85,6 +85,8 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 	roommateRouter.Use(internalMid.PublicAuth)
 
 	r.HandleFunc("/utilities", app.Utilities.GetAllUtilities).Methods(GET)
+
+	r.HandleFunc("users/{userId}", app.User.GetUserProfile).Methods(GET)
 
 	authRouter := r.PathPrefix("/auth").Subrouter()
 	authRouter.HandleFunc("/register", app.User.Register).Methods(POST)
