@@ -19,6 +19,7 @@ const Success = "success"
 func Json(w http.ResponseWriter, code int, res interface{}) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
+	// logrus.Info(json.NewEncoder(w).Encode(res))
 	return json.NewEncoder(w).Encode(res)
 }
 

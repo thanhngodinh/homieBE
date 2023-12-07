@@ -149,8 +149,8 @@ func (h *HttpPostHandler) CheckCreatePost(w http.ResponseWriter, r *http.Request
 }
 
 func (h *HttpPostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
-	var post domain.Post
-	er1 := json.NewDecoder(r.Body).Decode(&post)
+	post := &domain.Post{}
+	er1 := json.NewDecoder(r.Body).Decode(post)
 	defer r.Body.Close()
 	if er1 != nil {
 		util.Json(w, http.StatusBadRequest, util.Response{
@@ -159,7 +159,7 @@ func (h *HttpPostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	post.CreatedBy = r.Context().Value("userId").(string)
-	_, er3 := h.service.CreatePost(r.Context(), &post)
+	_, er3 := h.service.CreatePost(r.Context(), post)
 	if er3 != nil {
 		if util.IsDefinedErrorType(er3) {
 			util.Json(w, http.StatusBadRequest, util.Response{
@@ -176,7 +176,7 @@ func (h *HttpPostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *HttpPostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
-	var post domain.Post
+	var post domain.UpdatePostReq
 	er1 := json.NewDecoder(r.Body).Decode(&post)
 	defer r.Body.Close()
 	if er1 != nil {

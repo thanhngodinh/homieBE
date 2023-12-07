@@ -32,7 +32,7 @@ func (r *MyRepo) GetMyProfile(ctx context.Context, userId string) (*domain.UserP
 func (r *MyRepo) GetMyPostLiked(ctx context.Context, userId string) ([]post_domain.Post, int64, error) {
 	posts := []post_domain.Post{}
 	res := r.DB.Table("posts").
-		Select(`posts.*, true as "is_liked"`).
+		Select(`posts.*, (select avg from post_rate_info where post_rate_info.post_id = posts.id) as "avg_rate"`).
 		Joins("left join user_like_posts on user_like_posts.post_id = posts.id").
 		Where("user_like_posts.user_id = ?", userId).Scan(&posts)
 	return posts, res.RowsAffected, res.Error

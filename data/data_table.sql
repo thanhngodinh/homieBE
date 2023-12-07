@@ -119,6 +119,7 @@ CREATE TABLE "post_rate_info" (
   "id" bigserial PRIMARY KEY,
   "post_id" varchar(50) NOT NULL UNIQUE,
   "total" int NOT NULL default 0,
+  "avg" decimal(3,2) NOT NULL default 0,
   "star1" int NOT NULL default 0,
   "star2" int NOT NULL default 0,
   "star3" int NOT NULL default 0,

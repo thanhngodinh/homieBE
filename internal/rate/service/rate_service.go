@@ -2,9 +2,15 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"hostel-service/internal/rate/domain"
 	"hostel-service/internal/rate/port"
+	"hostel-service/pkg/util"
+	"strings"
 	"time"
+
+	"github.com/elastic/go-elasticsearch/v8"
+	"github.com/elastic/go-elasticsearch/v8/esapi"
 )
 
 type RateService interface {
@@ -15,14 +21,18 @@ type RateService interface {
 
 func NewRateService(
 	repository port.RateRepository,
+	esClient *elasticsearch.Client,
+
 ) RateService {
 	return &rateService{
 		repository: repository,
+		esClient:   esClient,
 	}
 }
 
 type rateService struct {
 	repository port.RateRepository
+	esClient   *elasticsearch.Client
 }
 
 func (s *rateService) GetPostRate(ctx context.Context, postId string) (*domain.PostRateInfo, error) {
@@ -53,6 +63,13 @@ func (s *rateService) CreateRate(ctx context.Context, rate *domain.Rate) (int64,
 	case 5:
 		*rateInfo.Star5++
 	}
+	rateInfo.AvgRate = util.RoundFloat(float64(*rateInfo.Star1+2*(*rateInfo.Star2)+3*(*rateInfo.Star3)+4*(*rateInfo.Star4)+5*(*rateInfo.Star5))/float64(*rateInfo.Total), 1)
+
+	err = s.updateElasticRate(ctx, rateInfo)
+	if err != nil {
+		return 0, err
+	}
+
 	err = s.repository.UpdatePostRateInfo(ctx, rateInfo)
 	if err != nil {
 		return 0, err
@@ -105,6 +122,12 @@ func (s *rateService) UpdateRate(ctx context.Context, rate *domain.Rate) (int64,
 	case 5:
 		*rateInfo.Star5++
 	}
+	rateInfo.AvgRate = util.RoundFloat(float64(*rateInfo.Star1+2*(*rateInfo.Star2)+3*(*rateInfo.Star3)+4*(*rateInfo.Star4)+5*(*rateInfo.Star5))/float64(*rateInfo.Total), 1)
+
+	err = s.updateElasticRate(ctx, rateInfo)
+	if err != nil {
+		return 0, err
+	}
 
 	err = s.repository.UpdatePostRateInfo(ctx, rateInfo)
 	if err != nil {
@@ -112,4 +135,30 @@ func (s *rateService) UpdateRate(ctx context.Context, rate *domain.Rate) (int64,
 	}
 
 	return res, nil
+}
+
+func (s *rateService) updateElasticRate(ctx context.Context, rateInfo *domain.PostRateInfo) error {
+	updateRequest := map[string]interface{}{
+		"doc": map[string]interface{}{
+			"rateInfo": rateInfo,
+		},
+	}
+	elasticJSON, err := json.Marshal(updateRequest)
+	if err != nil {
+		return err
+	}
+	// Thực hiện cập nhật trong Elasticsearch
+	req := esapi.UpdateRequest{
+		Index:      "post_index",
+		DocumentID: rateInfo.PostId,
+		Body:       strings.NewReader(string(elasticJSON)),
+	}
+
+	eRes, err := req.Do(ctx, s.esClient)
+	if err != nil {
+		return err
+	}
+	defer eRes.Body.Close()
+
+	return nil
 }

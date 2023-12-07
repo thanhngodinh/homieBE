@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"hostel-service/internal/rate/domain"
-	"hostel-service/pkg/util"
 
 	"gorm.io/gorm"
 )
@@ -25,13 +24,13 @@ func (r *RateRepo) GetPostRate(ctx context.Context, postId string) (*domain.Post
 	res = r.DB.Table("rates").Select("rates.*, users.display_name, users.avatar_url").
 		Joins("left join users on users.id = rates.user_id").
 		Where("post_id = ?", postId).Scan(&postRate.RateList)
-	postRate.AvgRate = util.RoundFloat(float64(*postRate.Star1+2*(*postRate.Star2)+3*(*postRate.Star3)+4*(*postRate.Star4)+5*(*postRate.Star5))/float64(*postRate.Total), 1)
 	return postRate, res.Error
 }
 
 func (r *RateRepo) GetSimplePostRate(ctx context.Context, postId string) (*domain.PostRateInfo, error) {
 	postRate := &domain.PostRateInfo{}
 	res := r.DB.Table("post_rate_info").Where("post_id = ?", postId).Find(postRate)
+
 	return postRate, res.Error
 }
 

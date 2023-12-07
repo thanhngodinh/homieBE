@@ -46,6 +46,7 @@ type Post struct {
 	AuthorAvatar     string                    `json:"authorAvatar" gorm:"column:author_avatar;->"`
 	Phone            string                    `json:"phone,omitempty" gorm:"column:phone;->"`
 	RateInfo         *rate_domain.PostRateInfo `json:"rateInfo" gorm:"column:rate_info;->"`
+	AvgRate          float64                   `json:"avgRate" gorm:"column:avg_rate;->"`
 	CreatedAt        time.Time                 `json:"createdAt,omitempty" gorm:"colum:created_at"`
 	EndedAt          time.Time                 `json:"endedAt,omitempty" gorm:"colum:ended_at"`
 	CreatedBy        string                    `json:"createdBy,omitempty" gorm:"colum:created_by"`
@@ -66,4 +67,34 @@ type RateInfo struct {
 type Compare struct {
 	Post1 Post `json:"post1"`
 	Post2 Post `json:"post2"`
+}
+
+type UpdatePostReq struct {
+	Id               string         `json:"id" gorm:"column:id;primary_key"`
+	Name             string         `json:"name" gorm:"column:name"`
+	Province         string         `json:"province,omitempty" gorm:"column:province"`
+	District         string         `json:"district,omitempty" gorm:"column:district"`
+	Ward             string         `json:"ward,omitempty" gorm:"column:ward"`
+	Street           string         `json:"street,omitempty" gorm:"column:street"`
+	Type             string         `json:"type,omitempty" gorm:"column:type"`
+	Status           PostStatus     `json:"status,omitempty" gorm:"column:status;type:text"`
+	Cost             int            `json:"cost,omitempty" gorm:"column:cost"`
+	Deposit          int            `json:"deposit,omitempty" gorm:"column:deposit"`
+	ElectricityPrice int            `json:"electricityPrice,omitempty" gorm:"column:electricity_price"`
+	WaterPrice       int            `json:"waterPrice,omitempty" gorm:"column:water_price"`
+	ParkingPrice     int            `json:"parkingPrice,omitempty" gorm:"column:parking_price"`
+	ServicePrice     int            `json:"servicePrice,omitempty" gorm:"column:service_price"`
+	Capacity         int            `json:"capacity,omitempty" gorm:"column:capacity"`
+	Area             int            `json:"area,omitempty" gorm:"column:area"`
+	ImageUrl         pq.StringArray `json:"imageUrl,omitempty" gorm:"column:image_url;type:text[]"`
+	Utilities        pq.StringArray `json:"utilities,omitempty" gorm:"utilities;type:text[];->"`
+	Description      string         `json:"description,omitempty" gorm:"column:description"`
+	Latitude         string         `json:"latitude,omitempty" gorm:"column:latitude"`
+	Longitude        string         `json:"longitude,omitempty" gorm:"column:longitude"`
+	CreatedAt        time.Time      `json:"createdAt,omitempty" gorm:"colum:created_at"`
+	EndedAt          time.Time      `json:"endedAt,omitempty" gorm:"colum:ended_at"`
+	CreatedBy        string         `json:"createdBy,omitempty" gorm:"colum:created_by"`
+	UpdatedAt        *time.Time     `json:"updatedAt,omitempty" gorm:"colum:updated_at"`
+	UpdatedBy        *string        `json:"updatedBy,omitempty" gorm:"colum:updated_by"`
+	DeletedAt        gorm.DeletedAt `json:"-"`
 }

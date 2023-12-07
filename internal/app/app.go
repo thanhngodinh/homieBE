@@ -64,8 +64,8 @@ func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
 	}
 
 	esCfg := elasticsearch.Config{
-		CloudID: "dbf646249c124369bf2e94bafc31712a:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvJGUzYWFlYzIyZTAwNDRmMjNiZjEzMmEzYjEzZjE4ZmM5JDVlY2VjZGExOTIwZjRjMmQ4MzU1MTUwNTcxMDQzOTRl",
-		APIKey:  "UmdxOWtJc0IzVjdNaEowcDJNQ2w6ak8tMGNYSHlRczZGZlRJZlNhYlZ6QQ==",
+		CloudID: "Homie:YXNpYS1ub3J0aGVhc3QxLmdjcC5jbG91ZC5lcy5pbyRlZmVhYzVjZDdmMDU0N2NmYjMxMmNkZjg5MGRlNmU2YyRkOTNkN2RkYTFhOTk0ZDIzYjk3OTA0Y2Y1OTVkODg0Yg==",
+		APIKey:  "VTVpQVE0d0JWcjRhdERFcmpzUUY6Mm5OYThNZUxSRGlaeWFBUTBmWDE5QQ==",
 	}
 	es, err := elasticsearch.NewClient(esCfg)
 	if err != nil {
@@ -97,7 +97,7 @@ func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
 	myService := myService.NewMyService(myRepository, postRepository)
 	myHandler := myHandler.NewMyHandler(myService, validate)
 
-	rateService := rateService.NewRateService(rateRepository)
+	rateService := rateService.NewRateService(rateRepository, es)
 	rateHandler := rateHandler.NewRateHandler(rateService, validate)
 
 	chatService := chatService.NewChatService()

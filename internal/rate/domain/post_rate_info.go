@@ -9,6 +9,6 @@ type PostRateInfo struct {
 	Star4    *int    `json:"star4" gorm:"column:star4"`
 	Star5    *int    `json:"star5" gorm:"column:star5"`
 	Total    *int64  `json:"total" gorm:"column:total"`
-	AvgRate  float64 `json:"avgRate" gorm:"-"`
+	AvgRate  float64 `json:"avgRate" gorm:"column:avg"`
 	RateList []Rate  `json:"rateList" gorm:"-"`
 }
