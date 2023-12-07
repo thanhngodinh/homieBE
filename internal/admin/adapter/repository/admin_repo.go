@@ -96,7 +96,7 @@ func (r *adminRepo) GetPosts(ctx context.Context, filter *domain.PostFilter) ([]
 	}
 	res1 := tx.Scan(&hotels)
 	total := res1.RowsAffected
-	res2 := tx.Order(filter.Sort).Limit(filter.PageSize).Offset(filter.PageIdx * filter.PageSize).Scan(&hotels)
+	res2 := tx.Order(filter.Sort).Limit(filter.PageSize).Offset((filter.PageIdx-1) * filter.PageSize).Scan(&hotels)
 	return hotels, total, res2.Error
 }
 
@@ -139,7 +139,7 @@ func (r *adminRepo) SearchUsers(ctx context.Context, filter *domain.UserFilter) 
 
 	res1 := tx.Scan(&users)
 	total := res1.RowsAffected
-	res2 := tx.Order(filter.Sort).Limit(filter.PageSize).Offset(filter.PageIdx * filter.PageSize).Scan(&users)
+	res2 := tx.Order(filter.Sort).Limit(filter.PageSize).Offset((filter.PageIdx-1) * filter.PageSize).Scan(&users)
 	return users, total, res2.Error
 }
 

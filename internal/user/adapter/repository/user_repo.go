@@ -47,7 +47,7 @@ func (r *userRepo) SearchRoommates(ctx context.Context, filter *domain.RoommateF
 
 	res1 := tx.Scan(&roommates)
 	total := res1.RowsAffected
-	res2 := tx.Order(filter.Sort).Limit(filter.PageSize).Offset(filter.PageIdx * filter.PageSize).Scan(&roommates)
+	res2 := tx.Order(filter.Sort).Limit(filter.PageSize).Offset((filter.PageIdx-1) * filter.PageSize).Scan(&roommates)
 	return roommates, total, res2.Error
 }
 
