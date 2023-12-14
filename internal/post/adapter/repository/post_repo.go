@@ -45,9 +45,6 @@ func (r *PostRepo) GetPosts(ctx context.Context, filter *domain.PostFilter, user
 	if filter.Street != "" {
 		tx = tx.Where("street ilike ?", fmt.Sprintf("%%%v%%", filter.Street))
 	}
-	if filter.Status != "" {
-		tx = tx.Where("posts.status = ?", filter.Status)
-	}
 	if filter.CostFrom != 0 {
 		tx = tx.Where("cost >= ?", filter.CostFrom)
 	}

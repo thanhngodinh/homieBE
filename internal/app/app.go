@@ -88,7 +88,7 @@ func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
 	utilitiesService := utilitiesService.NewUtilitiesService(utilitiesRepository)
 	utilitiesHandler := utilitiesHandler.NewUtilitiesHandler(utilitiesService, validate)
 
-	adminService := adminService.NewAdminService(adminRepository, rateRepository)
+	adminService := adminService.NewAdminService(adminRepository, rateRepository, es)
 	adminHandler := adminHandler.NewAdminHandler(adminService, validate)
 
 	userService := userService.NewUserService(userRepository)

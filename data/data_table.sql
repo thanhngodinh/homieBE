@@ -3,10 +3,10 @@ CREATE TYPE users_status AS ENUM ('A', 'I', 'L');
 
 CREATE TABLE "users" (
   "id" varchar(50) PRIMARY KEY,
-  "username" varchar(100) NOT NULL,
+  "username" varchar(100) NOT NULL UNIQUE,
   "password" varchar(100) NOT NULL,
   "phone" varchar(20) default '',
-  "email" varchar(100) NOT NULL,
+  "email" varchar(100) NOT NULL UNIQUE,
   "status" users_status NOT NULL default 'A',
   "avatar_url" varchar(500) default 'https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/default-avatar.png',
   "is_verified_email" boolean default false,

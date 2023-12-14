@@ -49,7 +49,6 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 	myRouter.HandleFunc("/liked-posts", app.My.GetMyPostLiked).Methods(GET)
 	myRouter.HandleFunc("/posts", app.My.GetMyPosts).Methods(GET)
 	myRouter.HandleFunc("/posts/{code}", app.Post.UpdatePost).Methods(PUT)
-	myRouter.HandleFunc("/password", app.User.UpdatePassword).Methods(PATCH)
 	myRouter.HandleFunc("/verify-phone", app.User.VerifyPhone).Methods(PATCH)
 	myRouter.HandleFunc("/verify-otp", app.User.VerifyPhoneOTP).Methods(PATCH)
 	myRouter.HandleFunc("/password", app.User.UpdatePassword).Methods(PATCH)

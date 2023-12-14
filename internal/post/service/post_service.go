@@ -146,7 +146,7 @@ func (s *postService) CreatePost(ctx context.Context, post *domain.Post) (int64,
 	post.Id = "post-" + uuid.NewString()
 	post.CreatedAt = time.Now()
 	post.EndedAt = time.Now().AddDate(0, 1, 0)
-	post.Status = domain.PostActive
+	post.Status = domain.PostWaiting
 
 	err := s.indexPost(s.esClient, post)
 	if err != nil {
@@ -197,15 +197,32 @@ func (s *postService) eSearchPosts(ctx context.Context, filter *domain.PostFilte
 			"bool": map[string]interface{}{
 				"should": []map[string]interface{}{
 					{
+						"terms": map[string]interface{}{
+							// "status": map[string]interface{}{
+							// 	"query": []string{"V", "A"},
+							// 	"boost": 5,
+							// },
+							"status": []string{"V", "A"},
+						},
+					},
+					{
 						"match": map[string]interface{}{
 							"name": filter.Name,
 						},
 					},
 					{
 						"match": map[string]interface{}{
+							"type": map[string]interface{}{
+								"query": filter.Type,
+								"boost": 2,
+							},
+						},
+					},
+					{
+						"match": map[string]interface{}{
 							"district": map[string]interface{}{
 								"query": filter.District,
-								"boost": 2,
+								"boost": 4,
 							},
 						},
 					},
@@ -215,11 +232,16 @@ func (s *postService) eSearchPosts(ctx context.Context, filter *domain.PostFilte
 						},
 					},
 					{
+						"match": map[string]interface{}{
+							"street": filter.Street,
+						},
+					},
+					{
 						"range": map[string]interface{}{
 							"cost": domain.Range{
 								GTE:   filter.CostFrom,
 								LTE:   filter.CostTo,
-								Boost: 2,
+								Boost: 3,
 							},
 						},
 					},
@@ -241,11 +263,6 @@ func (s *postService) eSearchPosts(ctx context.Context, filter *domain.PostFilte
 					},
 				},
 				"must": []map[string]interface{}{
-					{
-						"match": map[string]interface{}{
-							"status": "A",
-						},
-					},
 					{
 						"range": map[string]interface{}{
 							"endedAt": map[string]interface{}{

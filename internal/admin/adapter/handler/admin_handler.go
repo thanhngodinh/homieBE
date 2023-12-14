@@ -56,7 +56,7 @@ func (h *HttpAdminHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
 		Audience:  admin.Id,
-		ExpiresAt: time.Now().Add(time.Hour).Unix(),
+		ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
 	})
 	token, er3 := claims.SignedString(domain.ADMIN_SECRET_KEY)
 	if er3 != nil {

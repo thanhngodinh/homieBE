@@ -2,12 +2,16 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"hostel-service/internal/admin/domain"
 	"hostel-service/internal/admin/port"
 	rate_port "hostel-service/internal/rate/port"
 	"hostel-service/pkg/send_email"
+	"strings"
 
+	"github.com/elastic/go-elasticsearch/v8"
+	"github.com/elastic/go-elasticsearch/v8/esapi"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -30,16 +34,19 @@ type AdminService interface {
 func NewAdminService(
 	adminRepo port.AdminRepository,
 	rateRepo rate_port.RateRepository,
+	esClient *elasticsearch.Client,
 ) AdminService {
 	return &adminService{
 		adminRepo: adminRepo,
 		rateRepo:  rateRepo,
+		esClient:  esClient,
 	}
 }
 
 type adminService struct {
 	adminRepo port.AdminRepository
 	rateRepo  rate_port.RateRepository
+	esClient  *elasticsearch.Client
 }
 
 func (s *adminService) GetByUsername(ctx context.Context, username string) (*domain.Admin, error) {
@@ -82,6 +89,10 @@ func (s *adminService) GetPostById(ctx context.Context, postId string) (*domain.
 }
 
 func (s *adminService) UpdatePostStatus(ctx context.Context, id string, status string) (int64, error) {
+	err := s.updateElasticStatus(ctx, id, status)
+	if err != nil {
+		return -1, err
+	}
 	return s.adminRepo.UpdatePostStatus(ctx, id, status)
 }
 
@@ -116,4 +127,30 @@ func (s *adminService) ResetPassword(ctx context.Context, userId string) error {
 
 func (s *adminService) UpdateUserStatus(ctx context.Context, userId string, status string) error {
 	return s.adminRepo.UpdateUserStatus(ctx, userId, status)
+}
+
+func (s *adminService) updateElasticStatus(ctx context.Context, postId string, status string) error {
+	updateRequest := map[string]interface{}{
+		"doc": map[string]interface{}{
+			"status": status,
+		},
+	}
+	elasticJSON, err := json.Marshal(updateRequest)
+	if err != nil {
+		return err
+	}
+	// Thực hiện cập nhật trong Elasticsearch
+	req := esapi.UpdateRequest{
+		Index:      "post_index",
+		DocumentID: postId,
+		Body:       strings.NewReader(string(elasticJSON)),
+	}
+
+	eRes, err := req.Do(ctx, s.esClient)
+	if err != nil {
+		return err
+	}
+	defer eRes.Body.Close()
+
+	return nil
 }

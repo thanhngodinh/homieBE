@@ -12,7 +12,7 @@ type PostFilter struct {
 	District       string         `json:"district,omitempty"`
 	Ward           string         `json:"ward,omitempty"`
 	Street         string         `json:"street,omitempty"`
-	Status         string         `json:"status,omitempty"`
+	Type           string         `json:"type,omitempty"`
 	CostFrom       int            `json:"costFrom,omitempty"`
 	CostTo         int            `json:"costTo,omitempty"`
 	DepositFrom    int            `json:"depositFrom,omitempty"`
