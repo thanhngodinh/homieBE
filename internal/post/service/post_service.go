@@ -315,7 +315,7 @@ func (s *postService) eSearchPosts(ctx context.Context, filter *domain.PostFilte
 		)
 	}
 	if filter.PageSize >= 100 || filter.PageSize <= 0 {
-		filter.PageSize = 5
+		filter.PageSize = 100
 	}
 	if filter.PageIdx <= 0 {
 		filter.PageIdx = 1
