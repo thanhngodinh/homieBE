@@ -196,15 +196,11 @@ func (s *postService) eSearchPosts(ctx context.Context, filter *domain.PostFilte
 		"query": map[string]interface{}{
 			"bool": map[string]interface{}{
 				"should": []map[string]interface{}{
-					{
-						"terms": map[string]interface{}{
-							// "status": map[string]interface{}{
-							// 	"query": []string{"V", "A"},
-							// 	"boost": 5,
-							// },
-							"status": []string{"V", "A"},
-						},
-					},
+					// {
+					// 	"terms": map[string]interface{}{
+					// 		"status": []string{"V", "A"},
+					// 	},
+					// },
 					{
 						"match": map[string]interface{}{
 							"name": filter.Name,
@@ -268,6 +264,11 @@ func (s *postService) eSearchPosts(ctx context.Context, filter *domain.PostFilte
 							"endedAt": map[string]interface{}{
 								"gte": currentDate.Format(time.RFC3339),
 							},
+						},
+					},
+					{
+						"match": map[string]interface{}{
+							"status": "A",
 						},
 					},
 				},

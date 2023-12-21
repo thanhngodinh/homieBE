@@ -136,6 +136,7 @@ func (r *PostRepo) UpdatePost(ctx context.Context, post *domain.UpdatePostReq) (
 		for _, u := range post.Utilities {
 			hu = append(hu, domain.PostUtilities{PostId: post.Id, UtilitiesId: u})
 		}
+		r.DB.Table("post_utilities").Create(hu)
 	}
 	return res.RowsAffected, res.Error
 }
