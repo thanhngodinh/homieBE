@@ -37,7 +37,7 @@ func main() {
 	}
 
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"*", "http://localhost", "http://localhost:3000", "http://localhost:3030/"},
+		AllowedOrigins: []string{"*", "http://localhost", "http://localhost:3000", "http://localhost:3030/","https://homie-zeta.vercel.app"},
 		AllowedMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
 		AllowedHeaders: []string{"*"},
 		// AllowCredentials: true,
