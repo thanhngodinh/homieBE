@@ -62,6 +62,9 @@ func Route(r *mux.Router, ctx context.Context, conf Config) error {
 	hostelRouter.HandleFunc("/like/{postId}", app.My.LikePost).Methods(POST)
 	hostelRouter.HandleFunc("/{code}", app.Post.UpdatePost).Methods(PUT)
 	hostelRouter.HandleFunc("/{code}", app.Post.DeletePost).Methods(DELETE)
+	hostelRouter.HandleFunc("/{postId}/extend", app.Post.ExtendPost).Methods(PATCH)
+	hostelRouter.HandleFunc("/{postId}/hidden", app.Post.HiddenPost).Methods(PATCH)
+	hostelRouter.HandleFunc("/{postId}/active", app.Post.ActivePost).Methods(PATCH)
 	hostelRouter.Use(internalMid.Authenticate)
 
 	hostelPublicRouter := r.PathPrefix("/posts").Subrouter()

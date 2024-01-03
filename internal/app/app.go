@@ -64,8 +64,8 @@ func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
 	}
 
 	esCfg := elasticsearch.Config{
-		CloudID: "Homie:YXNpYS1ub3J0aGVhc3QxLmdjcC5jbG91ZC5lcy5pbyRlZmVhYzVjZDdmMDU0N2NmYjMxMmNkZjg5MGRlNmU2YyRkOTNkN2RkYTFhOTk0ZDIzYjk3OTA0Y2Y1OTVkODg0Yg==",
-		APIKey:  "VTVpQVE0d0JWcjRhdERFcmpzUUY6Mm5OYThNZUxSRGlaeWFBUTBmWDE5QQ==",
+		CloudID: "762c9776a7c948959d09bc679435a31a:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvJDY2MmMxYjI2YjM4MjQ3NWU5MGUyNDkwMzY2ZGNiNmQ4JDgxNjYyYTEzYmUwNDQ1ZTk5NGIzNGQ4YTgyZjdkOGU5",
+		APIKey:  "OFFSNnlvd0JfWGVWY3J5V1ozRXc6OS0zMzFQN3pRVi1oMC1PT0pZdGFZZw==",
 	}
 	es, err := elasticsearch.NewClient(esCfg)
 	if err != nil {

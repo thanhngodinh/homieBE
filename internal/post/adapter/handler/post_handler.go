@@ -212,6 +212,51 @@ func (h *HttpPostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (h *HttpPostHandler) HiddenPost(w http.ResponseWriter, r *http.Request) {
+	postId := mux.Vars(r)["postId"]
+	if len(postId) == 0 {
+		util.JsonBadRequest(w, util.ErrorCodeEmpty)
+		return
+	}
+
+	_, err := h.service.HiddenPost(r.Context(), postId)
+	if err != nil {
+		util.JsonInternalError(w, err)
+		return
+	}
+	util.JsonOK(w)
+}
+
+func (h *HttpPostHandler) ActivePost(w http.ResponseWriter, r *http.Request) {
+	postId := mux.Vars(r)["postId"]
+	if len(postId) == 0 {
+		util.JsonBadRequest(w, util.ErrorCodeEmpty)
+		return
+	}
+
+	_, err := h.service.ActivePost(r.Context(), postId)
+	if err != nil {
+		util.JsonInternalError(w, err)
+		return
+	}
+	util.JsonOK(w)
+}
+
+func (h *HttpPostHandler) ExtendPost(w http.ResponseWriter, r *http.Request) {
+	postId := mux.Vars(r)["postId"]
+	if len(postId) == 0 {
+		util.JsonBadRequest(w, util.ErrorCodeEmpty)
+		return
+	}
+
+	_, err := h.service.ExtendPost(r.Context(), postId)
+	if err != nil {
+		util.JsonInternalError(w, err)
+		return
+	}
+	util.JsonOK(w)
+}
+
 func (h *HttpPostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	code := mux.Vars(r)["code"]
 	if len(code) == 0 {

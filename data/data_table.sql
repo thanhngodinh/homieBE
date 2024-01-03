@@ -48,7 +48,7 @@ CREATE TABLE "admins" (
 );
 
 CREATE TYPE hostel_types AS ENUM ('Ký túc xá', 'Phòng cho thuê', 'Nhà nguyên căn', 'Phòng ở ghép', 'Căn hộ');
-CREATE TYPE post_status AS ENUM ('W', 'A', 'I', 'V');
+CREATE TYPE post_status AS ENUM ('W', 'A', 'I', 'V', 'H', 'E');
 
 CREATE TABLE "posts" (
   "id" varchar(50) PRIMARY KEY,

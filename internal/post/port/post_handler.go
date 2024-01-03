@@ -11,5 +11,8 @@ type PostHandler interface {
 	CheckCreatePost(w http.ResponseWriter, r *http.Request)
 	CreatePost(w http.ResponseWriter, r *http.Request)
 	UpdatePost(w http.ResponseWriter, r *http.Request)
+	HiddenPost(w http.ResponseWriter, r *http.Request)
+	ActivePost(w http.ResponseWriter, r *http.Request)
+	ExtendPost(w http.ResponseWriter, r *http.Request)
 	DeletePost(w http.ResponseWriter, r *http.Request)
 }

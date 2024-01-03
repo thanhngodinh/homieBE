@@ -28,6 +28,9 @@ type PostService interface {
 	CheckCreatePost(ctx context.Context, userId string) (int64, error)
 	CreatePost(ctx context.Context, post *domain.Post) (int64, error)
 	UpdatePost(ctx context.Context, post *domain.UpdatePostReq) (int64, error)
+	HiddenPost(ctx context.Context, postId string) (int64, error)
+	ActivePost(ctx context.Context, postId string) (int64, error)
+	ExtendPost(ctx context.Context, postId string) (int64, error)
 	DeletePost(ctx context.Context, postId string) (int64, error)
 }
 
@@ -156,6 +159,45 @@ func (s *postService) CreatePost(ctx context.Context, post *domain.Post) (int64,
 	return s.repository.CreatePost(ctx, post)
 }
 
+func (s *postService) ExtendPost(ctx context.Context, postId string) (int64, error) {
+	// Thực hiện cập nhật trong Elasticsearch
+	err := s.updateElasticStatus(ctx, postId, "W", time.Now().AddDate(0, 1, 0))
+	if err != nil {
+		return -1, err
+	}
+
+	return s.repository.ExtendPost(ctx, postId)
+}
+
+func (s *postService) HiddenPost(ctx context.Context, postId string) (int64, error) {
+	// Thực hiện cập nhật trong Elasticsearch
+	err := s.updateElasticStatus(ctx, postId, "H")
+	if err != nil {
+		return -1, err
+	}
+
+	return s.repository.UpdateSatus(ctx, postId, "H")
+}
+
+func (s *postService) ActivePost(ctx context.Context, postId string) (int64, error) {
+	post, err := s.repository.GetPostById(ctx, postId, "")
+	if err != nil {
+		return 0, err
+	}
+
+	// Thực hiện cập nhật trong Elasticsearch
+	if post.Status == "H" && post.EndedAt.After(time.Now()) {
+		err := s.updateElasticStatus(ctx, postId, "A")
+		if err != nil {
+			return -1, err
+		}
+
+		return s.repository.UpdateSatus(ctx, postId, "A")
+	}
+
+	return -2, fmt.Errorf("This post can't active")
+}
+
 func (s *postService) UpdatePost(ctx context.Context, post *domain.UpdatePostReq) (int64, error) {
 	t := time.Now()
 	post.UpdatedAt = &t
@@ -181,6 +223,7 @@ func (s *postService) DeletePost(ctx context.Context, postId string) (int64, err
 
 	return s.repository.DeletePost(ctx, post)
 }
+
 func (s *postService) ESearchPosts(ctx context.Context, post *domain.PostFilter, userId string) ([]domain.Post, int64, error) {
 	posts, total, err := s.eSearchPosts(ctx, post)
 	if err != nil {
@@ -274,20 +317,6 @@ func (s *postService) eSearchPosts(ctx context.Context, filter *domain.PostFilte
 				},
 			},
 		},
-		// "filter": map[string]interface{}{
-		// 	"range": map[string]interface{}{
-		// 		"_score": domain.Range{
-		// 			GTE: 1,
-		// 		},
-		// 	},
-		// },
-		// "sort": []map[string]interface{}{
-		// 	{
-		// 		"createdAt": map[string]interface{}{
-		// 			"order": "asc", // Hoặc "desc" nếu bạn muốn sắp xếp giảm dần.
-		// 		},
-		// 	},
-		// },
 	}
 	if len(filter.Province) > 0 {
 		elasticQuery["query"].(map[string]interface{})["bool"].(map[string]interface{})["must"] = append(
@@ -383,6 +412,43 @@ func (s *postService) indexPost(es *elasticsearch.Client, post *domain.Post) err
 	}
 
 	log.Printf("Indexed document with ID %s to index %s", docID, indexName)
+	return nil
+}
+
+func (s *postService) updateElasticStatus(ctx context.Context, postId string, status string, endedAt ...time.Time) error {
+	updateRequest := map[string]interface{}{
+		"doc": map[string]interface{}{
+			"status": status,
+		},
+	}
+
+	if len(endedAt) > 0 {
+		updateRequest = map[string]interface{}{
+			"doc": map[string]interface{}{
+				"status":   status,
+				"ended_at": endedAt[0],
+			},
+		}
+
+	}
+
+	elasticJSON, err := json.Marshal(updateRequest)
+	if err != nil {
+		return err
+	}
+	// Thực hiện cập nhật trong Elasticsearch
+	req := esapi.UpdateRequest{
+		Index:      "post_index",
+		DocumentID: postId,
+		Body:       strings.NewReader(string(elasticJSON)),
+	}
+
+	eRes, err := req.Do(ctx, s.esClient)
+	if err != nil {
+		return err
+	}
+	defer eRes.Body.Close()
+
 	return nil
 }
 

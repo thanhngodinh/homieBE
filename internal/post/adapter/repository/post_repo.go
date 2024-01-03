@@ -141,6 +141,16 @@ func (r *PostRepo) UpdatePost(ctx context.Context, post *domain.UpdatePostReq) (
 	return res.RowsAffected, res.Error
 }
 
+func (r *PostRepo) ExtendPost(ctx context.Context, id string) (int64, error) {
+	res := r.DB.Table("posts").Where("id = ?", id).Updates(map[string]interface{}{"status": "W", "ended_at": time.Now().AddDate(0, 1, 0)})
+	return res.RowsAffected, res.Error
+}
+
+func (r *PostRepo) UpdateSatus(ctx context.Context, id string, status string) (int64, error) {
+	res := r.DB.Table("posts").Where("id = ?", id).Updates(map[string]interface{}{"status": status})
+	return res.RowsAffected, res.Error
+}
+
 func (r *PostRepo) DeletePost(ctx context.Context, post *domain.Post) (int64, error) {
 	res := r.DB.Table("posts").Delete(post)
 	return res.RowsAffected, res.Error

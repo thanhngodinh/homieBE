@@ -11,5 +11,7 @@ type PostRepository interface {
 	GetPostByIds(ctx context.Context, ids []string) ([]domain.Post, error)
 	CreatePost(ctx context.Context, hostel *domain.Post) (int64, error)
 	UpdatePost(ctx context.Context, hostel *domain.UpdatePostReq) (int64, error)
+	ExtendPost(ctx context.Context, postId string) (int64, error)
+	UpdateSatus(ctx context.Context, postId string, status string) (int64, error)
 	DeletePost(ctx context.Context, hostel *domain.Post) (int64, error)
 }
